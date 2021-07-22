@@ -1,0 +1,19 @@
+class Program {
+    int a;
+    b;
+    struct my_struct {
+        int a;
+        char b;
+    }
+
+    void main() {
+        a = 0;
+        b = true;
+
+        while (a < 10) {
+            a = a - 1;
+        }
+
+        b = false;
+    }
+}
