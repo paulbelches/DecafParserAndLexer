@@ -34,8 +34,8 @@ declaration
 	;
 	
 varDeclaration 
-	: varType  ID  ';' 
-	| varType  ID  '[' NUM ']' ';' 
+	: varType  ID  ';' 				#variableDeclaration
+	| varType  ID  '[' NUM ']' ';'  #arrayDeclaration
 	;
 
 structDeclaration

@@ -16,14 +16,17 @@
 class  decafBaseListener : public decafListener {
 public:
 
-  virtual void enterProgram(decafParser::ProgramContext * /*ctx*/) override { }
+  virtual void enterProgram(decafParser::ProgramContext *ctx) override { }
   virtual void exitProgram(decafParser::ProgramContext * /*ctx*/) override { }
 
   virtual void enterDeclaration(decafParser::DeclarationContext * /*ctx*/) override { }
   virtual void exitDeclaration(decafParser::DeclarationContext * /*ctx*/) override { }
 
-  virtual void enterVarDeclaration(decafParser::VarDeclarationContext * /*ctx*/) override { }
-  virtual void exitVarDeclaration(decafParser::VarDeclarationContext * /*ctx*/) override { }
+  virtual void enterVariableDeclaration(decafParser::VariableDeclarationContext * /*ctx*/) override { }
+  virtual void exitVariableDeclaration(decafParser::VariableDeclarationContext * /*ctx*/) override { }
+
+  virtual void enterArrayDeclaration(decafParser::ArrayDeclarationContext * /*ctx*/) override { }
+  virtual void exitArrayDeclaration(decafParser::ArrayDeclarationContext * /*ctx*/) override { }
 
   virtual void enterStructDeclaration(decafParser::StructDeclarationContext * /*ctx*/) override { }
   virtual void exitStructDeclaration(decafParser::StructDeclarationContext * /*ctx*/) override { }

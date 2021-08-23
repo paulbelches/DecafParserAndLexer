@@ -97,14 +97,35 @@ public:
   class  VarDeclarationContext : public antlr4::ParserRuleContext {
   public:
     VarDeclarationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    VarDeclarationContext() = default;
+    void copyFrom(VarDeclarationContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
     virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  ArrayDeclarationContext : public VarDeclarationContext {
+  public:
+    ArrayDeclarationContext(VarDeclarationContext *ctx);
+
     VarTypeContext *varType();
     antlr4::tree::TerminalNode *ID();
     antlr4::tree::TerminalNode *NUM();
-
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-   
+  };
+
+  class  VariableDeclarationContext : public VarDeclarationContext {
+  public:
+    VariableDeclarationContext(VarDeclarationContext *ctx);
+
+    VarTypeContext *varType();
+    antlr4::tree::TerminalNode *ID();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
   };
 
   VarDeclarationContext* varDeclaration();

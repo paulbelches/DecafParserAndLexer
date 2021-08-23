@@ -191,35 +191,63 @@ decafParser::VarDeclarationContext::VarDeclarationContext(ParserRuleContext *par
   : ParserRuleContext(parent, invokingState) {
 }
 
-decafParser::VarTypeContext* decafParser::VarDeclarationContext::varType() {
-  return getRuleContext<decafParser::VarTypeContext>(0);
-}
-
-tree::TerminalNode* decafParser::VarDeclarationContext::ID() {
-  return getToken(decafParser::ID, 0);
-}
-
-tree::TerminalNode* decafParser::VarDeclarationContext::NUM() {
-  return getToken(decafParser::NUM, 0);
-}
-
 
 size_t decafParser::VarDeclarationContext::getRuleIndex() const {
   return decafParser::RuleVarDeclaration;
 }
 
-void decafParser::VarDeclarationContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<decafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterVarDeclaration(this);
+void decafParser::VarDeclarationContext::copyFrom(VarDeclarationContext *ctx) {
+  ParserRuleContext::copyFrom(ctx);
 }
 
-void decafParser::VarDeclarationContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<decafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitVarDeclaration(this);
+//----------------- ArrayDeclarationContext ------------------------------------------------------------------
+
+decafParser::VarTypeContext* decafParser::ArrayDeclarationContext::varType() {
+  return getRuleContext<decafParser::VarTypeContext>(0);
 }
 
+tree::TerminalNode* decafParser::ArrayDeclarationContext::ID() {
+  return getToken(decafParser::ID, 0);
+}
+
+tree::TerminalNode* decafParser::ArrayDeclarationContext::NUM() {
+  return getToken(decafParser::NUM, 0);
+}
+
+decafParser::ArrayDeclarationContext::ArrayDeclarationContext(VarDeclarationContext *ctx) { copyFrom(ctx); }
+
+void decafParser::ArrayDeclarationContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterArrayDeclaration(this);
+}
+void decafParser::ArrayDeclarationContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitArrayDeclaration(this);
+}
+//----------------- VariableDeclarationContext ------------------------------------------------------------------
+
+decafParser::VarTypeContext* decafParser::VariableDeclarationContext::varType() {
+  return getRuleContext<decafParser::VarTypeContext>(0);
+}
+
+tree::TerminalNode* decafParser::VariableDeclarationContext::ID() {
+  return getToken(decafParser::ID, 0);
+}
+
+decafParser::VariableDeclarationContext::VariableDeclarationContext(VarDeclarationContext *ctx) { copyFrom(ctx); }
+
+void decafParser::VariableDeclarationContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterVariableDeclaration(this);
+}
+void decafParser::VariableDeclarationContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitVariableDeclaration(this);
+}
 decafParser::VarDeclarationContext* decafParser::varDeclaration() {
   VarDeclarationContext *_localctx = _tracker.createInstance<VarDeclarationContext>(_ctx, getState());
   enterRule(_localctx, 4, decafParser::RuleVarDeclaration);
@@ -232,6 +260,7 @@ decafParser::VarDeclarationContext* decafParser::varDeclaration() {
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 2, _ctx)) {
     case 1: {
+      _localctx = dynamic_cast<VarDeclarationContext *>(_tracker.createInstance<decafParser::VariableDeclarationContext>(_localctx));
       enterOuterAlt(_localctx, 1);
       setState(64);
       varType();
@@ -243,6 +272,7 @@ decafParser::VarDeclarationContext* decafParser::varDeclaration() {
     }
 
     case 2: {
+      _localctx = dynamic_cast<VarDeclarationContext *>(_tracker.createInstance<decafParser::ArrayDeclarationContext>(_localctx));
       enterOuterAlt(_localctx, 2);
       setState(68);
       varType();

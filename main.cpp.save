@@ -1,0 +1,17 @@
+#include <iostream>
+
+#include "antlr4-runtime.h"
+#include "decafLexer.h"
+#include "decafParser.h"
+#include "decafBaseListener.h"
+
+using namespace antlr4;
+
+int main(int argc, const char* argv[]) {
+  std::ifstream stream;
+  stream.open(argv[1]);
+  ANTLRInputStream input(stream);
+  MyGrammarLexer lexer(&input);
+  Comm
+  return 0;
+}
