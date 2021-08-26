@@ -17,16 +17,16 @@ class  decafBaseListener : public decafListener {
 public:
 
   virtual void enterProgram(decafParser::ProgramContext *ctx) override { }
-  virtual void exitProgram(decafParser::ProgramContext * /*ctx*/) override { }
+  virtual void exitProgram(decafParser::ProgramContext *ctx) override { }
 
   virtual void enterDeclaration(decafParser::DeclarationContext * /*ctx*/) override { }
   virtual void exitDeclaration(decafParser::DeclarationContext * /*ctx*/) override { }
 
   virtual void enterVariableDeclaration(decafParser::VariableDeclarationContext * /*ctx*/) override { }
-  virtual void exitVariableDeclaration(decafParser::VariableDeclarationContext * /*ctx*/) override { }
+  virtual void exitVariableDeclaration(decafParser::VariableDeclarationContext *ctx) override { }
 
   virtual void enterArrayDeclaration(decafParser::ArrayDeclarationContext * /*ctx*/) override { }
-  virtual void exitArrayDeclaration(decafParser::ArrayDeclarationContext * /*ctx*/) override { }
+  virtual void exitArrayDeclaration(decafParser::ArrayDeclarationContext *ctx) override { }
 
   virtual void enterStructDeclaration(decafParser::StructDeclarationContext * /*ctx*/) override { }
   virtual void exitStructDeclaration(decafParser::StructDeclarationContext * /*ctx*/) override { }
@@ -34,8 +34,8 @@ public:
   virtual void enterVarType(decafParser::VarTypeContext * /*ctx*/) override { }
   virtual void exitVarType(decafParser::VarTypeContext * /*ctx*/) override { }
 
-  virtual void enterMethodDeclaration(decafParser::MethodDeclarationContext * /*ctx*/) override { }
-  virtual void exitMethodDeclaration(decafParser::MethodDeclarationContext * /*ctx*/) override { }
+  virtual void enterMethodDeclaration(decafParser::MethodDeclarationContext *ctx) override { }
+  virtual void exitMethodDeclaration(decafParser::MethodDeclarationContext *ctx) override { }
 
   virtual void enterMethodType(decafParser::MethodTypeContext * /*ctx*/) override { }
   virtual void exitMethodType(decafParser::MethodTypeContext * /*ctx*/) override { }
@@ -55,8 +55,26 @@ public:
   virtual void enterLocation(decafParser::LocationContext * /*ctx*/) override { }
   virtual void exitLocation(decafParser::LocationContext * /*ctx*/) override { }
 
-  virtual void enterExpression(decafParser::ExpressionContext * /*ctx*/) override { }
-  virtual void exitExpression(decafParser::ExpressionContext * /*ctx*/) override { }
+  virtual void enterExpressionLiteral(decafParser::ExpressionLiteralContext * /*ctx*/) override { }
+  virtual void exitExpressionLiteral(decafParser::ExpressionLiteralContext * /*ctx*/) override { }
+
+  virtual void enterExpressionNegation(decafParser::ExpressionNegationContext * /*ctx*/) override { }
+  virtual void exitExpressionNegation(decafParser::ExpressionNegationContext * /*ctx*/) override { }
+
+  virtual void enterExpressionParentesis(decafParser::ExpressionParentesisContext * /*ctx*/) override { }
+  virtual void exitExpressionParentesis(decafParser::ExpressionParentesisContext * /*ctx*/) override { }
+
+  virtual void enterExpressionPair(decafParser::ExpressionPairContext * /*ctx*/) override { }
+  virtual void exitExpressionPair(decafParser::ExpressionPairContext * /*ctx*/) override { }
+
+  virtual void enterExpressionLocation(decafParser::ExpressionLocationContext * /*ctx*/) override { }
+  virtual void exitExpressionLocation(decafParser::ExpressionLocationContext * /*ctx*/) override { }
+
+  virtual void enterExpressionMethodCall(decafParser::ExpressionMethodCallContext * /*ctx*/) override { }
+  virtual void exitExpressionMethodCall(decafParser::ExpressionMethodCallContext * /*ctx*/) override { }
+
+  virtual void enterExpressionNegativ(decafParser::ExpressionNegativContext * /*ctx*/) override { }
+  virtual void exitExpressionNegativ(decafParser::ExpressionNegativContext * /*ctx*/) override { }
 
   virtual void enterMethodCall(decafParser::MethodCallContext * /*ctx*/) override { }
   virtual void exitMethodCall(decafParser::MethodCallContext * /*ctx*/) override { }
@@ -65,7 +83,7 @@ public:
   virtual void exitArg(decafParser::ArgContext * /*ctx*/) override { }
 
   virtual void enterOp(decafParser::OpContext * /*ctx*/) override { }
-  virtual void exitOp(decafParser::OpContext * /*ctx*/) override { }
+  virtual void exitOp(decafParser::OpContext *ctx) override { }
 
   virtual void enterArith_op(decafParser::Arith_opContext * /*ctx*/) override { }
   virtual void exitArith_op(decafParser::Arith_opContext * /*ctx*/) override { }
@@ -80,7 +98,7 @@ public:
   virtual void exitCond_op(decafParser::Cond_opContext * /*ctx*/) override { }
 
   virtual void enterLiteral(decafParser::LiteralContext * /*ctx*/) override { }
-  virtual void exitLiteral(decafParser::LiteralContext * /*ctx*/) override { }
+  virtual void exitLiteral(decafParser::LiteralContext *ctx) override { }
 
   virtual void enterInt_literal(decafParser::Int_literalContext * /*ctx*/) override { }
   virtual void exitInt_literal(decafParser::Int_literalContext * /*ctx*/) override { }

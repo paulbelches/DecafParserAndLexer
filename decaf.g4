@@ -32,7 +32,7 @@ declaration
 	| structDeclaration
 	| methodDeclaration
 	;
-	
+/////////	
 varDeclaration 
 	: varType  ID  ';' 				#variableDeclaration
 	| varType  ID  '[' NUM ']' ';'  #arrayDeclaration
@@ -50,7 +50,7 @@ varType
 	| structDeclaration
 	| 'void'
 	;
-
+/////////
 methodDeclaration
 	: methodType ID '(' (parameter (',' parameter)*)* ')' block
 	;
@@ -61,7 +61,7 @@ methodType
 	| 'boolean' 
 	| 'void'
 	;
-
+/////////
 parameter 
 	: parameterType ID
 	| parameterType ID '[' ']'
@@ -87,36 +87,37 @@ statement
 	| (expression)? ';'
 	;
 
+methodCall
+	: ID '(' (arg) (',' arg)*')'
+	;
+
 location
-	: ID ('.' location)?
+	: ID
+	| ID ('.' location)?
 	| ID '[' expression ']' ('.' location)?
 	;
 
 expression
-	: location
-	| methodCall
-	| literal
-	| expression op expression
-	| '-' expression
-	| '!' expression
-	| '(' expression ')'
-	;
-
-methodCall
-	: ID '(' (arg) (',' arg)*')'
+	: location					#expressionLocation
+	| methodCall				#expressionMethodCall
+	| literal					#expressionLiteral
+	| expression op expression	#expressionPair
+	| '-' expression			#expressionNegativ
+	| '!' expression			#expressionNegation
+	| '(' expression ')'		#expressionParentesis
 	;
 
 arg	
 	: expression
 	;
-
+///////////
 op
 	: arith_op
 	| rel_op
 	| eq_op
 	| cond_op
 	;
-
+///////////
 arith_op
 	: '+'
 	| '-'
@@ -124,38 +125,38 @@ arith_op
 	| '/'
 	| '%'
 	;
-
+///////////
 rel_op
 	: '>'
 	| '<'
 	| '>='
 	| '<='
 	;
-
+///////////
 eq_op
 	: '=='
 	| '!='
 	;
-
+///////////
 cond_op
 	: '&&'
 	| '||'
 	;
-
+///////////
 literal
 	: int_literal
 	| char_literal
 	| bool_literal
 	;
-
+///////////
 int_literal
 	: NUM
 	;
-
+///////////
 char_literal
 	: CHAR
 	;
-
+///////////
 bool_literal
 	: 'true'
 	| 'false'

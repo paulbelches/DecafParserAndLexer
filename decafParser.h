@@ -265,17 +265,79 @@ public:
   class  ExpressionContext : public antlr4::ParserRuleContext {
   public:
     ExpressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    ExpressionContext() = default;
+    void copyFrom(ExpressionContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
     virtual size_t getRuleIndex() const override;
-    LocationContext *location();
-    MethodCallContext *methodCall();
+
+   
+  };
+
+  class  ExpressionLiteralContext : public ExpressionContext {
+  public:
+    ExpressionLiteralContext(ExpressionContext *ctx);
+
     LiteralContext *literal();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  class  ExpressionNegationContext : public ExpressionContext {
+  public:
+    ExpressionNegationContext(ExpressionContext *ctx);
+
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  class  ExpressionParentesisContext : public ExpressionContext {
+  public:
+    ExpressionParentesisContext(ExpressionContext *ctx);
+
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  class  ExpressionPairContext : public ExpressionContext {
+  public:
+    ExpressionPairContext(ExpressionContext *ctx);
+
     std::vector<ExpressionContext *> expression();
     ExpressionContext* expression(size_t i);
     OpContext *op();
-
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-   
+  };
+
+  class  ExpressionLocationContext : public ExpressionContext {
+  public:
+    ExpressionLocationContext(ExpressionContext *ctx);
+
+    LocationContext *location();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  class  ExpressionMethodCallContext : public ExpressionContext {
+  public:
+    ExpressionMethodCallContext(ExpressionContext *ctx);
+
+    MethodCallContext *methodCall();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  class  ExpressionNegativContext : public ExpressionContext {
+  public:
+    ExpressionNegativContext(ExpressionContext *ctx);
+
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
   };
 
   ExpressionContext* expression();

@@ -1182,47 +1182,149 @@ decafParser::ExpressionContext::ExpressionContext(ParserRuleContext *parent, siz
   : ParserRuleContext(parent, invokingState) {
 }
 
-decafParser::LocationContext* decafParser::ExpressionContext::location() {
-  return getRuleContext<decafParser::LocationContext>(0);
-}
-
-decafParser::MethodCallContext* decafParser::ExpressionContext::methodCall() {
-  return getRuleContext<decafParser::MethodCallContext>(0);
-}
-
-decafParser::LiteralContext* decafParser::ExpressionContext::literal() {
-  return getRuleContext<decafParser::LiteralContext>(0);
-}
-
-std::vector<decafParser::ExpressionContext *> decafParser::ExpressionContext::expression() {
-  return getRuleContexts<decafParser::ExpressionContext>();
-}
-
-decafParser::ExpressionContext* decafParser::ExpressionContext::expression(size_t i) {
-  return getRuleContext<decafParser::ExpressionContext>(i);
-}
-
-decafParser::OpContext* decafParser::ExpressionContext::op() {
-  return getRuleContext<decafParser::OpContext>(0);
-}
-
 
 size_t decafParser::ExpressionContext::getRuleIndex() const {
   return decafParser::RuleExpression;
 }
 
-void decafParser::ExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<decafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterExpression(this);
+void decafParser::ExpressionContext::copyFrom(ExpressionContext *ctx) {
+  ParserRuleContext::copyFrom(ctx);
 }
 
-void decafParser::ExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<decafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitExpression(this);
+//----------------- ExpressionLiteralContext ------------------------------------------------------------------
+
+decafParser::LiteralContext* decafParser::ExpressionLiteralContext::literal() {
+  return getRuleContext<decafParser::LiteralContext>(0);
 }
 
+decafParser::ExpressionLiteralContext::ExpressionLiteralContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+void decafParser::ExpressionLiteralContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterExpressionLiteral(this);
+}
+void decafParser::ExpressionLiteralContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitExpressionLiteral(this);
+}
+//----------------- ExpressionNegationContext ------------------------------------------------------------------
+
+decafParser::ExpressionContext* decafParser::ExpressionNegationContext::expression() {
+  return getRuleContext<decafParser::ExpressionContext>(0);
+}
+
+decafParser::ExpressionNegationContext::ExpressionNegationContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+void decafParser::ExpressionNegationContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterExpressionNegation(this);
+}
+void decafParser::ExpressionNegationContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitExpressionNegation(this);
+}
+//----------------- ExpressionParentesisContext ------------------------------------------------------------------
+
+decafParser::ExpressionContext* decafParser::ExpressionParentesisContext::expression() {
+  return getRuleContext<decafParser::ExpressionContext>(0);
+}
+
+decafParser::ExpressionParentesisContext::ExpressionParentesisContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+void decafParser::ExpressionParentesisContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterExpressionParentesis(this);
+}
+void decafParser::ExpressionParentesisContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitExpressionParentesis(this);
+}
+//----------------- ExpressionPairContext ------------------------------------------------------------------
+
+std::vector<decafParser::ExpressionContext *> decafParser::ExpressionPairContext::expression() {
+  return getRuleContexts<decafParser::ExpressionContext>();
+}
+
+decafParser::ExpressionContext* decafParser::ExpressionPairContext::expression(size_t i) {
+  return getRuleContext<decafParser::ExpressionContext>(i);
+}
+
+decafParser::OpContext* decafParser::ExpressionPairContext::op() {
+  return getRuleContext<decafParser::OpContext>(0);
+}
+
+decafParser::ExpressionPairContext::ExpressionPairContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+void decafParser::ExpressionPairContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterExpressionPair(this);
+}
+void decafParser::ExpressionPairContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitExpressionPair(this);
+}
+//----------------- ExpressionLocationContext ------------------------------------------------------------------
+
+decafParser::LocationContext* decafParser::ExpressionLocationContext::location() {
+  return getRuleContext<decafParser::LocationContext>(0);
+}
+
+decafParser::ExpressionLocationContext::ExpressionLocationContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+void decafParser::ExpressionLocationContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterExpressionLocation(this);
+}
+void decafParser::ExpressionLocationContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitExpressionLocation(this);
+}
+//----------------- ExpressionMethodCallContext ------------------------------------------------------------------
+
+decafParser::MethodCallContext* decafParser::ExpressionMethodCallContext::methodCall() {
+  return getRuleContext<decafParser::MethodCallContext>(0);
+}
+
+decafParser::ExpressionMethodCallContext::ExpressionMethodCallContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+void decafParser::ExpressionMethodCallContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterExpressionMethodCall(this);
+}
+void decafParser::ExpressionMethodCallContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitExpressionMethodCall(this);
+}
+//----------------- ExpressionNegativContext ------------------------------------------------------------------
+
+decafParser::ExpressionContext* decafParser::ExpressionNegativContext::expression() {
+  return getRuleContext<decafParser::ExpressionContext>(0);
+}
+
+decafParser::ExpressionNegativContext::ExpressionNegativContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+void decafParser::ExpressionNegativContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterExpressionNegativ(this);
+}
+void decafParser::ExpressionNegativContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<decafListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitExpressionNegativ(this);
+}
 
 decafParser::ExpressionContext* decafParser::expression() {
    return expression(0);
@@ -1249,24 +1351,37 @@ decafParser::ExpressionContext* decafParser::expression(int precedence) {
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 17, _ctx)) {
     case 1: {
+      _localctx = _tracker.createInstance<ExpressionLocationContext>(_localctx);
+      _ctx = _localctx;
+      previousContext = _localctx;
+
       setState(190);
       location();
       break;
     }
 
     case 2: {
+      _localctx = _tracker.createInstance<ExpressionMethodCallContext>(_localctx);
+      _ctx = _localctx;
+      previousContext = _localctx;
       setState(191);
       methodCall();
       break;
     }
 
     case 3: {
+      _localctx = _tracker.createInstance<ExpressionLiteralContext>(_localctx);
+      _ctx = _localctx;
+      previousContext = _localctx;
       setState(192);
       literal();
       break;
     }
 
     case 4: {
+      _localctx = _tracker.createInstance<ExpressionNegativContext>(_localctx);
+      _ctx = _localctx;
+      previousContext = _localctx;
       setState(193);
       match(decafParser::T__21);
       setState(194);
@@ -1275,6 +1390,9 @@ decafParser::ExpressionContext* decafParser::expression(int precedence) {
     }
 
     case 5: {
+      _localctx = _tracker.createInstance<ExpressionNegationContext>(_localctx);
+      _ctx = _localctx;
+      previousContext = _localctx;
       setState(195);
       match(decafParser::T__22);
       setState(196);
@@ -1283,6 +1401,9 @@ decafParser::ExpressionContext* decafParser::expression(int precedence) {
     }
 
     case 6: {
+      _localctx = _tracker.createInstance<ExpressionParentesisContext>(_localctx);
+      _ctx = _localctx;
+      previousContext = _localctx;
       setState(197);
       match(decafParser::T__12);
       setState(198);
@@ -1302,8 +1423,9 @@ decafParser::ExpressionContext* decafParser::expression(int precedence) {
         if (!_parseListeners.empty())
           triggerExitRuleEvent();
         previousContext = _localctx;
-        _localctx = _tracker.createInstance<ExpressionContext>(parentContext, parentState);
-        pushNewRecursionContext(_localctx, startState, RuleExpression);
+        auto newContext = _tracker.createInstance<ExpressionPairContext>(_tracker.createInstance<ExpressionContext>(parentContext, parentState));
+        _localctx = newContext;
+        pushNewRecursionContext(newContext, startState, RuleExpression);
         setState(203);
 
         if (!(precpred(_ctx, 4))) throw FailedPredicateException(this, "precpred(_ctx, 4)");

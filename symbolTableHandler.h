@@ -19,6 +19,10 @@ class SymbolTableHandler {
         symbolTable.pop();
     }
 
+    SymbolTable top(){
+        return symbolTable.top();
+    }
+
     void empty(){
         if (!symbolTable.empty()){
             symbolTable.top().empty();
@@ -27,20 +31,23 @@ class SymbolTableHandler {
         }
     }
 
-    void binding(string identifier, int type, int dataType, int size){
+    void binding(string identifier, int dataType, int size){
         //cout << "Tama;o actual: " << symbolTable.size() << endl;
         if (!symbolTable.empty()){
-            symbolTable.top().binding(identifier, type, dataType, size);
+            symbolTable.top().binding(identifier, dataType, size);
         } else {
             cout << "Error, no symbol table to insert in." << endl;
         }
     }
 
+
+    //Para llamadas y referencias, no declaraciones
     int elementExist(string identifier){
         int pos = -1;
         int length = symbolTable.size();
         stack<SymbolTable> tempSymbolTable;
         for (int i = 0; i < length; i++){
+            //Check if the identifier exist
             if (symbolTable.top().hasElement(identifier)) {
                 pos = i;
                 break;

@@ -1,35 +1,34 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <vector>
 #include <algorithm>
 #include <vector>
 
 using namespace std;
 
-class SymbolTable {
+class FunctionTable {
     struct data {
         int id;
-        int dataType;
-        int size;
-        int offset;
+        int returnType;
+        vector<string> params;
     };
-
-
-    map<string, data> symbolTable;
+    map<string, data> functionTable;
     vector<string> idTable;
     public:
     void empty(){
-        symbolTable.empty();
+        functionTable.empty();
         idTable.empty();
     }
 
-    void binding(string identifier, int dataType, int size){
+    void binding(string identifier, int returnType, vector<string> params){
         data tempData;
         tempData.id = idTable.size();
-        tempData.size = size;
-        tempData.offset = (tempData.id == 0) ? 0 : symbolTable[idTable[tempData.id - 1]].offset + symbolTable[idTable[tempData.id - 1]].size ;
-        symbolTable[identifier] = tempData;
+        tempData.returnType = returnType;
+        tempData.params = params;
+        functionTable[identifier] = tempData;
         idTable.push_back(identifier);
+
     }
 
     string getIdentifier(int id){
@@ -37,7 +36,7 @@ class SymbolTable {
     }
 
     data lookup(string identifier){
-        return symbolTable[identifier];
+        return functionTable[identifier];
     }
 
     bool hasElement(string identifier){
@@ -45,4 +44,9 @@ class SymbolTable {
         it = find(idTable.begin(), idTable.end(), identifier);
         return it != idTable.end();
     }
+
+    int paramsAmount(string identifier){
+        return functionTable[identifier].params.size();
+    }
+
 };

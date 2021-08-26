@@ -53,8 +53,26 @@ public:
   virtual void enterLocation(decafParser::LocationContext *ctx) = 0;
   virtual void exitLocation(decafParser::LocationContext *ctx) = 0;
 
-  virtual void enterExpression(decafParser::ExpressionContext *ctx) = 0;
-  virtual void exitExpression(decafParser::ExpressionContext *ctx) = 0;
+  virtual void enterExpressionLiteral(decafParser::ExpressionLiteralContext *ctx) = 0;
+  virtual void exitExpressionLiteral(decafParser::ExpressionLiteralContext *ctx) = 0;
+
+  virtual void enterExpressionNegation(decafParser::ExpressionNegationContext *ctx) = 0;
+  virtual void exitExpressionNegation(decafParser::ExpressionNegationContext *ctx) = 0;
+
+  virtual void enterExpressionParentesis(decafParser::ExpressionParentesisContext *ctx) = 0;
+  virtual void exitExpressionParentesis(decafParser::ExpressionParentesisContext *ctx) = 0;
+
+  virtual void enterExpressionPair(decafParser::ExpressionPairContext *ctx) = 0;
+  virtual void exitExpressionPair(decafParser::ExpressionPairContext *ctx) = 0;
+
+  virtual void enterExpressionLocation(decafParser::ExpressionLocationContext *ctx) = 0;
+  virtual void exitExpressionLocation(decafParser::ExpressionLocationContext *ctx) = 0;
+
+  virtual void enterExpressionMethodCall(decafParser::ExpressionMethodCallContext *ctx) = 0;
+  virtual void exitExpressionMethodCall(decafParser::ExpressionMethodCallContext *ctx) = 0;
+
+  virtual void enterExpressionNegativ(decafParser::ExpressionNegativContext *ctx) = 0;
+  virtual void exitExpressionNegativ(decafParser::ExpressionNegativContext *ctx) = 0;
 
   virtual void enterMethodCall(decafParser::MethodCallContext *ctx) = 0;
   virtual void exitMethodCall(decafParser::MethodCallContext *ctx) = 0;
