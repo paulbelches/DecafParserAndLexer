@@ -52,9 +52,10 @@ varType
 	;
 /////////
 methodDeclaration
-	: methodType ID '(' (parameter (',' parameter)*)* ')' block
+	: methodType ID '(' (parameter (',' parameter)*)? ')' block
 	;
- 
+
+///////////
 methodType
 	: 'int'
 	| 'char'	
@@ -63,8 +64,8 @@ methodType
 	;
 /////////
 parameter 
-	: parameterType ID
-	| parameterType ID '[' ']'
+	: parameterType ID			#parameterVariable
+	| parameterType ID '[' ']'	#parameterArray
 	;
 
 parameterType
@@ -78,46 +79,50 @@ block
 	;
 
 statement
-	: 'if' '(' expression ')' block ('else' block )?
-	| 'while' '(' expression ')' block
-	| 'return' (expression)? ';'
-	| methodCall ';'
-	| block
-	| location '=' expression
-	| (expression)? ';'
+	: 'if' '(' expression ')' block ('else' block )?#ifStatement //check if expression is bool
+	| 'while' '(' expression ')' block 				#whileStatement //check if expression is bool
+	| 'return' (expression)? ';' 					#ReturnStatement // set return type (in method existe compare types)
+	//| methodCall ';' 
+	| block											#blockStatement
+	| location '=' expression 						#asignationStatement//cheack if types are the same
+	| (expression)? ';' 							#expresionStatement
 	;
 
+/*+++++++++++*/
 methodCall
-	: ID '(' (arg) (',' arg)*')'
+	: ID '(' (arg) (',' arg)*')' //set arg types,  check if exist, set return type
 	;
 
 location
-	: ID
-	| ID ('.' location)?
-	| ID '[' expression ']' ('.' location)?
+	: ID									#varIdLocation //check if exist and set type
+	| ID ('.' location)?					#structLocation //check if exist, check if location exist and set type
+	| ID '[' expression ']' ('.' location)?	#arrayLocation //check if exist, if its array and set type
 	;
 
+//Array verification
+///////////
 expression
-	: location					#expressionLocation
-	| methodCall				#expressionMethodCall
-	| literal					#expressionLiteral
-	| expression op expression	#expressionPair
-	| '-' expression			#expressionNegativ
-	| '!' expression			#expressionNegation
-	| '(' expression ')'		#expressionParentesis
+	: location					#expressionLocation ///
+	| methodCall				#expressionMethodCall ///
+	| literal					#expressionLiteral ////
+	| expression op expression	#expressionPair ////
+	| '-' expression			#expressionNegativ ////
+	| '!' expression			#expressionNegation ////
+	| '(' expression ')'		#expressionParentesis ////
 	;
 
+/*+++++++++++*/
 arg	
 	: expression
 	;
-///////////
+/*+++++++++++*/  ///add vector check
 op
 	: arith_op
 	| rel_op
 	| eq_op
 	| cond_op
 	;
-///////////
+/*+++++++++++*/
 arith_op
 	: '+'
 	| '-'
@@ -125,38 +130,38 @@ arith_op
 	| '/'
 	| '%'
 	;
-///////////
+/*+++++++++++*/
 rel_op
 	: '>'
 	| '<'
 	| '>='
 	| '<='
 	;
-///////////
+/*+++++++++++*/
 eq_op
 	: '=='
 	| '!='
 	;
-///////////
+/*+++++++++++*/
 cond_op
 	: '&&'
 	| '||'
 	;
-///////////
+/*+++++++++++*/
 literal
 	: int_literal
 	| char_literal
 	| bool_literal
 	;
-///////////
+/*+++++++++++*/
 int_literal
 	: NUM
 	;
-///////////
+/*+++++++++++*/
 char_literal
 	: CHAR
 	;
-///////////
+/*+++++++++++*/
 bool_literal
 	: 'true'
 	| 'false'

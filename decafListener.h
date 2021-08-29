@@ -38,8 +38,11 @@ public:
   virtual void enterMethodType(decafParser::MethodTypeContext *ctx) = 0;
   virtual void exitMethodType(decafParser::MethodTypeContext *ctx) = 0;
 
-  virtual void enterParameter(decafParser::ParameterContext *ctx) = 0;
-  virtual void exitParameter(decafParser::ParameterContext *ctx) = 0;
+  virtual void enterParameterVariable(decafParser::ParameterVariableContext *ctx) = 0;
+  virtual void exitParameterVariable(decafParser::ParameterVariableContext *ctx) = 0;
+
+  virtual void enterParameterArray(decafParser::ParameterArrayContext *ctx) = 0;
+  virtual void exitParameterArray(decafParser::ParameterArrayContext *ctx) = 0;
 
   virtual void enterParameterType(decafParser::ParameterTypeContext *ctx) = 0;
   virtual void exitParameterType(decafParser::ParameterTypeContext *ctx) = 0;
@@ -47,11 +50,35 @@ public:
   virtual void enterBlock(decafParser::BlockContext *ctx) = 0;
   virtual void exitBlock(decafParser::BlockContext *ctx) = 0;
 
-  virtual void enterStatement(decafParser::StatementContext *ctx) = 0;
-  virtual void exitStatement(decafParser::StatementContext *ctx) = 0;
+  virtual void enterIfStatement(decafParser::IfStatementContext *ctx) = 0;
+  virtual void exitIfStatement(decafParser::IfStatementContext *ctx) = 0;
 
-  virtual void enterLocation(decafParser::LocationContext *ctx) = 0;
-  virtual void exitLocation(decafParser::LocationContext *ctx) = 0;
+  virtual void enterWhileStatement(decafParser::WhileStatementContext *ctx) = 0;
+  virtual void exitWhileStatement(decafParser::WhileStatementContext *ctx) = 0;
+
+  virtual void enterReturnStatement(decafParser::ReturnStatementContext *ctx) = 0;
+  virtual void exitReturnStatement(decafParser::ReturnStatementContext *ctx) = 0;
+
+  virtual void enterBlockStatement(decafParser::BlockStatementContext *ctx) = 0;
+  virtual void exitBlockStatement(decafParser::BlockStatementContext *ctx) = 0;
+
+  virtual void enterAsignationStatement(decafParser::AsignationStatementContext *ctx) = 0;
+  virtual void exitAsignationStatement(decafParser::AsignationStatementContext *ctx) = 0;
+
+  virtual void enterExpresionStatement(decafParser::ExpresionStatementContext *ctx) = 0;
+  virtual void exitExpresionStatement(decafParser::ExpresionStatementContext *ctx) = 0;
+
+  virtual void enterMethodCall(decafParser::MethodCallContext *ctx) = 0;
+  virtual void exitMethodCall(decafParser::MethodCallContext *ctx) = 0;
+
+  virtual void enterVarIdLocation(decafParser::VarIdLocationContext *ctx) = 0;
+  virtual void exitVarIdLocation(decafParser::VarIdLocationContext *ctx) = 0;
+
+  virtual void enterStructLocation(decafParser::StructLocationContext *ctx) = 0;
+  virtual void exitStructLocation(decafParser::StructLocationContext *ctx) = 0;
+
+  virtual void enterArrayLocation(decafParser::ArrayLocationContext *ctx) = 0;
+  virtual void exitArrayLocation(decafParser::ArrayLocationContext *ctx) = 0;
 
   virtual void enterExpressionLiteral(decafParser::ExpressionLiteralContext *ctx) = 0;
   virtual void exitExpressionLiteral(decafParser::ExpressionLiteralContext *ctx) = 0;
@@ -73,9 +100,6 @@ public:
 
   virtual void enterExpressionNegativ(decafParser::ExpressionNegativContext *ctx) = 0;
   virtual void exitExpressionNegativ(decafParser::ExpressionNegativContext *ctx) = 0;
-
-  virtual void enterMethodCall(decafParser::MethodCallContext *ctx) = 0;
-  virtual void exitMethodCall(decafParser::MethodCallContext *ctx) = 0;
 
   virtual void enterArg(decafParser::ArgContext *ctx) = 0;
   virtual void exitArg(decafParser::ArgContext *ctx) = 0;

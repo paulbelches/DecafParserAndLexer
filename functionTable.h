@@ -10,7 +10,7 @@ using namespace std;
 class FunctionTable {
     struct data {
         int id;
-        int returnType;
+        string returnType;
         vector<string> params;
     };
     map<string, data> functionTable;
@@ -21,7 +21,7 @@ class FunctionTable {
         idTable.empty();
     }
 
-    void binding(string identifier, int returnType, vector<string> params){
+    void binding(string identifier, string returnType, vector<string> params){
         data tempData;
         tempData.id = idTable.size();
         tempData.returnType = returnType;
@@ -48,5 +48,22 @@ class FunctionTable {
     int paramsAmount(string identifier){
         return functionTable[identifier].params.size();
     }
+
+    void pushParam(string identifier, string type){
+        functionTable[identifier].params.push_back(type);
+    }
+
+    int getParamAmount(string identifier){
+        return functionTable[identifier].params.size();
+    }
+
+    string getType(string identifier){
+        return functionTable[identifier].returnType;
+    }
+
+    vector<string> getParams(string identifier){
+        return functionTable[identifier].params;
+    }
+    
 
 };

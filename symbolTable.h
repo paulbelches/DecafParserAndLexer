@@ -9,11 +9,10 @@ using namespace std;
 class SymbolTable {
     struct data {
         int id;
-        int dataType;
+        string dataType;
         int size;
         int offset;
     };
-
 
     map<string, data> symbolTable;
     vector<string> idTable;
@@ -23,10 +22,11 @@ class SymbolTable {
         idTable.empty();
     }
 
-    void binding(string identifier, int dataType, int size){
+    void binding(string identifier, string dataType, int size){
         data tempData;
         tempData.id = idTable.size();
         tempData.size = size;
+        tempData.dataType = dataType;
         tempData.offset = (tempData.id == 0) ? 0 : symbolTable[idTable[tempData.id - 1]].offset + symbolTable[idTable[tempData.id - 1]].size ;
         symbolTable[identifier] = tempData;
         idTable.push_back(identifier);
@@ -44,5 +44,9 @@ class SymbolTable {
         vector<string>::iterator it;
         it = find(idTable.begin(), idTable.end(), identifier);
         return it != idTable.end();
+    }
+
+    string getType(int pos){
+        return idTable[pos];
     }
 };

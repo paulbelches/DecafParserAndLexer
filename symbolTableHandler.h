@@ -31,7 +31,7 @@ class SymbolTableHandler {
         }
     }
 
-    void binding(string identifier, int dataType, int size){
+    void binding(string identifier, string dataType, int size){
         //cout << "Tama;o actual: " << symbolTable.size() << endl;
         if (!symbolTable.empty()){
             symbolTable.top().binding(identifier, dataType, size);
@@ -63,4 +63,25 @@ class SymbolTableHandler {
         return pos;
     }
 
+    //Para llamadas y referencias, no declaraciones
+    string getType(string identifier){
+        string type = "null" ;
+        int length = symbolTable.size();
+        stack<SymbolTable> tempSymbolTable;
+        for (int i = 0; i < length; i++){
+            //Check if the identifier exist
+            if (symbolTable.top().hasElement(identifier)) {
+                type = symbolTable.top().lookup(identifier).dataType;
+                break;
+            }
+            tempSymbolTable.push(symbolTable.top());
+            symbolTable.pop();
+        }
+        length = tempSymbolTable.size();
+        for (int i = 0; i < length; i++){
+            symbolTable.push(tempSymbolTable.top());
+            tempSymbolTable.pop();
+        }
+        return type;
+    }
 };

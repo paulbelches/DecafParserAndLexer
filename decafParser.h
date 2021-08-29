@@ -24,10 +24,10 @@ public:
   enum {
     RuleProgram = 0, RuleDeclaration = 1, RuleVarDeclaration = 2, RuleStructDeclaration = 3, 
     RuleVarType = 4, RuleMethodDeclaration = 5, RuleMethodType = 6, RuleParameter = 7, 
-    RuleParameterType = 8, RuleBlock = 9, RuleStatement = 10, RuleLocation = 11, 
-    RuleExpression = 12, RuleMethodCall = 13, RuleArg = 14, RuleOp = 15, 
-    RuleArith_op = 16, RuleRel_op = 17, RuleEq_op = 18, RuleCond_op = 19, 
-    RuleLiteral = 20, RuleInt_literal = 21, RuleChar_literal = 22, RuleBool_literal = 23
+    RuleParameterType = 8, RuleBlock = 9, RuleStatement = 10, RuleMethodCall = 11, 
+    RuleLocation = 12, RuleExpression = 13, RuleArg = 14, RuleOp = 15, RuleArith_op = 16, 
+    RuleRel_op = 17, RuleEq_op = 18, RuleCond_op = 19, RuleLiteral = 20, 
+    RuleInt_literal = 21, RuleChar_literal = 22, RuleBool_literal = 23
   };
 
   decafParser(antlr4::TokenStream *input);
@@ -51,9 +51,9 @@ public:
   class ParameterTypeContext;
   class BlockContext;
   class StatementContext;
+  class MethodCallContext;
   class LocationContext;
   class ExpressionContext;
-  class MethodCallContext;
   class ArgContext;
   class OpContext;
   class Arith_opContext;
@@ -191,13 +191,34 @@ public:
   class  ParameterContext : public antlr4::ParserRuleContext {
   public:
     ParameterContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    ParameterContext() = default;
+    void copyFrom(ParameterContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
     virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  ParameterArrayContext : public ParameterContext {
+  public:
+    ParameterArrayContext(ParameterContext *ctx);
+
     ParameterTypeContext *parameterType();
     antlr4::tree::TerminalNode *ID();
-
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-   
+  };
+
+  class  ParameterVariableContext : public ParameterContext {
+  public:
+    ParameterVariableContext(ParameterContext *ctx);
+
+    ParameterTypeContext *parameterType();
+    antlr4::tree::TerminalNode *ID();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
   };
 
   ParameterContext* parameter();
@@ -233,31 +254,132 @@ public:
   class  StatementContext : public antlr4::ParserRuleContext {
   public:
     StatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    StatementContext() = default;
+    void copyFrom(StatementContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
     virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  WhileStatementContext : public StatementContext {
+  public:
+    WhileStatementContext(StatementContext *ctx);
+
+    ExpressionContext *expression();
+    BlockContext *block();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  class  BlockStatementContext : public StatementContext {
+  public:
+    BlockStatementContext(StatementContext *ctx);
+
+    BlockContext *block();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  class  ExpresionStatementContext : public StatementContext {
+  public:
+    ExpresionStatementContext(StatementContext *ctx);
+
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  class  ReturnStatementContext : public StatementContext {
+  public:
+    ReturnStatementContext(StatementContext *ctx);
+
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  class  AsignationStatementContext : public StatementContext {
+  public:
+    AsignationStatementContext(StatementContext *ctx);
+
+    LocationContext *location();
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  class  IfStatementContext : public StatementContext {
+  public:
+    IfStatementContext(StatementContext *ctx);
+
     ExpressionContext *expression();
     std::vector<BlockContext *> block();
     BlockContext* block(size_t i);
-    MethodCallContext *methodCall();
-    LocationContext *location();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  StatementContext* statement();
+
+  class  MethodCallContext : public antlr4::ParserRuleContext {
+  public:
+    MethodCallContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *ID();
+    std::vector<ArgContext *> arg();
+    ArgContext* arg(size_t i);
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
    
   };
 
-  StatementContext* statement();
+  MethodCallContext* methodCall();
 
   class  LocationContext : public antlr4::ParserRuleContext {
   public:
     LocationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *ID();
-    LocationContext *location();
-    ExpressionContext *expression();
+   
+    LocationContext() = default;
+    void copyFrom(LocationContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
 
+    virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  ArrayLocationContext : public LocationContext {
+  public:
+    ArrayLocationContext(LocationContext *ctx);
+
+    antlr4::tree::TerminalNode *ID();
+    ExpressionContext *expression();
+    LocationContext *location();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-   
+  };
+
+  class  VarIdLocationContext : public LocationContext {
+  public:
+    VarIdLocationContext(LocationContext *ctx);
+
+    antlr4::tree::TerminalNode *ID();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
+
+  class  StructLocationContext : public LocationContext {
+  public:
+    StructLocationContext(LocationContext *ctx);
+
+    antlr4::tree::TerminalNode *ID();
+    LocationContext *location();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
   };
 
   LocationContext* location();
@@ -342,21 +464,6 @@ public:
 
   ExpressionContext* expression();
   ExpressionContext* expression(int precedence);
-  class  MethodCallContext : public antlr4::ParserRuleContext {
-  public:
-    MethodCallContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *ID();
-    std::vector<ArgContext *> arg();
-    ArgContext* arg(size_t i);
-
-    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
-    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-   
-  };
-
-  MethodCallContext* methodCall();
-
   class  ArgContext : public antlr4::ParserRuleContext {
   public:
     ArgContext(antlr4::ParserRuleContext *parent, size_t invokingState);

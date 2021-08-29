@@ -1,26 +1,22 @@
 class Program {
     int a;
     int b;
-    int array[12];
     
     int prueba(int a , int b){
         int c;
-        int a;
-        int d;
-    }
-
-    struct juan {
-        int d ;
+        int d[10];
+        return c;
     }
 
     void main() {
         a = 0;
-        b = true;
-        
-        while (a < 10) {
+        a = -(12);
+        a = a + 1 + prueba(a + 1, 1);
+        prueba(a + 1, 1);
+        prueba(1, 1);
+        if (true) {
             a = a - 1;
-        }
-
-        b = false;
+        } 
+        return;
     }
 }
