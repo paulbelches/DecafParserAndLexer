@@ -296,9 +296,12 @@ public:
       int argCount = 0;
       vector<string> args;
       while (ctx->arg(argCount) != 0){
+        //cout << ctx->arg(argCount)->getText()<< endl; 
+        //cout << nodeTypes.get(ctx->arg(argCount))<< endl; 
         args.push_back(nodeTypes.get(ctx->arg(argCount)));
         argCount++;
       }
+      //cout << argCount << endl;
       vector<string> methodParams = functionTable.getParams(identifier);
       //Compare firms
       if (equal(args.begin(), args.end(), methodParams.begin(), methodParams.end())){

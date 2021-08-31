@@ -1,14 +1,15 @@
 class Program
 { 
-int factorial(int n)
+int factorial(int n, int y [])
 {
+    int z[4];
 	if (n==0)
 	{
 		return 1;
 	}
 	else
 	{
-		return n*factorial(n-1);
+		return n*factorial(n-1, z);
 	}
 
 }
@@ -19,7 +20,7 @@ void main()
 	y[2] = 2;
 	y[3] = 3;
 	y[1]= y[2]+y[3];
-	y[4] = factorial(y[1]);
+	y[4] = factorial(y[1], y);
 }
 
 }
