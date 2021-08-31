@@ -142,11 +142,15 @@ public:
     symbolTable.exit();
     string identifier = ctx->ID()->getText();
     string blockType = nodeTypes.get(ctx->block());
-    string blockReturnType = nodeValues.get(ctx->block());
+    //string blockReturnType = nodeValues.get(ctx->block());
     string methodType = nodeTypes.get(ctx);
+
     if (blockType == "error"){
       nodeTypes.put(ctx, "error");
-    } else if (methodType != blockReturnType){
+      cout << "Error in method declaration" << endl;
+    } else if (methodType != blockType){
+      //cout << methodType << endl;
+      //cout << blockReturnType << endl;
       cout << "Error, method " + identifier + " expected return " + methodType + " but " + blockType + " returned" << endl;
       nodeTypes.put(ctx, "error");
     }
@@ -194,21 +198,23 @@ public:
       }
     }
     for (int i = 0; i < ctx->statement().size(); i++){
-      if (nodeTypes.get(ctx->statement(i)) == "error"){
+      string type = nodeTypes.get(ctx->statement(i));
+      if (type == "error"){
         nodeTypes.put(ctx, "error");
         return;
-      }
-      if (nodeValues.get(ctx->statement(i)) == "return"){
+      } else if (type != "void"){
         if (nodeValues.get(ctx).size() == 0){
-          nodeValues.put(ctx, nodeTypes.get(ctx->statement(i)));  
+          //nodeValues.put(ctx, "error");
+          nodeTypes.put(ctx, type);
+          //cout << "Block " << ctx << " " << nodeValues.get(ctx) << " " << ctx->getText() << endl;
+          return; 
         } else {
-          if (nodeValues.get(ctx) != nodeTypes.get(ctx->statement(i))){
+          if (nodeValues.get(ctx) != type){
             cout << "Error, multiple types return in method" << endl;
             nodeTypes.put(ctx, "error");
             return;
           }
         }
-        
       }
     }
     nodeTypes.put( ctx, "void" );
@@ -221,7 +227,17 @@ public:
     if ((blockType == "error") || (block2Type == "error") || (expressionType == "error")){
       nodeTypes.put(ctx, "error");
     } else if (expressionType == "boolean"){
-      nodeTypes.put( ctx, "void" );
+      //There is no else statement , so it is not known if the result is going to be return
+      if (ctx->block()[1] == 0){
+        nodeTypes.put(ctx, blockType);
+      } else {
+        if (blockType == block2Type) {
+          nodeTypes.put(ctx, block2Type);
+        } else {
+          nodeTypes.put(ctx, "error");
+          cout << "Error, if statement returns two diferent types" << endl;
+        }
+      }
     } else {
       nodeTypes.put(ctx, "error");
       cout << "Error, if statement with no boolean conditional" << endl;
@@ -235,22 +251,22 @@ public:
     if ((blockType == "error") || (expressionType == "error")){
       nodeTypes.put(ctx, "error");
     } else if (expressionType == "boolean"){
-      nodeTypes.put( ctx, "void" );
+      nodeTypes.put(ctx, nodeTypes.get(ctx->block()));
     } else {
-      nodeTypes.put( ctx , "error");
+      nodeTypes.put(ctx , "error");
       cout << "Error, while statement with no boolean conditional" << endl;
     }
   }
 
   virtual void exitReturnStatement(decafParser::ReturnStatementContext *ctx) override {
     if (ctx->expression() == 0){
-      nodeTypes.put( ctx, "void");
-      nodeValues.put( ctx, "return" );
+      nodeTypes.put(ctx, "void");
+      //nodeValues.put( ctx, "return" );
     } else if (nodeTypes.get(ctx->expression()) == "error"){
       nodeTypes.put( ctx , "error");
     } else {
       nodeTypes.put( ctx, nodeTypes.get(ctx->expression()) );
-      nodeValues.put( ctx, "return" );
+      //nodeValues.put( ctx, "return" );
     }
   }
 
@@ -267,6 +283,11 @@ public:
     }
   }
 
+  virtual void exitExpresionStatement(decafParser::ExpresionStatementContext *ctx) override {
+    nodeTypes.put( ctx, "void" );
+  }
+
+  //////////////////////////////////////Expressions
   virtual void exitMethodCall(decafParser::MethodCallContext *ctx) override {
     string identifier = ctx->ID()->getText();
     //Check if identifier exist
@@ -281,6 +302,7 @@ public:
       vector<string> methodParams = functionTable.getParams(identifier);
       //Compare firms
       if (equal(args.begin(), args.end(), methodParams.begin(), methodParams.end())){
+        //cout << identifier << " is of type " << functionTable.getType(identifier) << endl;
         nodeTypes.put(ctx, functionTable.getType(identifier));
       } else {
         //Print error message
@@ -311,6 +333,7 @@ public:
   virtual void exitVarIdLocation(decafParser::VarIdLocationContext *ctx) override { 
     string identifier = ctx->ID()->getText();
     string type = symbolTable.getType(identifier);
+    /*
     if (ctx->location() != 0){
       if (structTable.hasElement(type)){
         if (structTable.lookup(type).hasElement(ctx->location()->getText())){
@@ -325,7 +348,8 @@ public:
         nodeTypes.put(ctx, "error");
         return;
       }
-    }
+    }*/
+    //Check if it is a valid identifier
     if (symbolTable.elementExist(identifier) != -1){
       nodeTypes.put( ctx, type );
     } else {
@@ -345,6 +369,7 @@ public:
       nodeTypes.put(ctx, "error");
       return;
     }
+    /*
     //check if it is a struct
     if (ctx->location() != 0){
       cout << type << identifier << endl;
@@ -364,7 +389,8 @@ public:
         nodeTypes.put(ctx, "error");
         return;
       }
-    }
+    }*/
+    //Check if it is a valid identifier
     if (symbolTable.elementExist(identifier) != -1){
       nodeTypes.put( ctx, type );
     } else {
