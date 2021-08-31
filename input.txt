@@ -1,19 +1,28 @@
 class Program {
     int a;
     int b;
-    
-    int prueba(int a , int b){
+    int d [10];
+    struct A {
+        int a;
+        int b;
+    };
+
+    struct A e;
+    struct A f [2];
+    int prueba(int a [], int b){
         int c;
         int d[10];
+        c.a = 0;
+        c + d[-1];
+        f[1].c = 3;
         return c;
     }
 
     void main() {
         a = 0;
         a = -(12);
-        a = a + 1 + prueba(a + 1, 1);
-        prueba(a + 1, 1);
-        prueba(1, 1);
+        int d[10];
+        prueba(d, 1);
         if (true) {
             a = a - 1;
         } 

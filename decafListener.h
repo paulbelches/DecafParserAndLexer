@@ -74,9 +74,6 @@ public:
   virtual void enterVarIdLocation(decafParser::VarIdLocationContext *ctx) = 0;
   virtual void exitVarIdLocation(decafParser::VarIdLocationContext *ctx) = 0;
 
-  virtual void enterStructLocation(decafParser::StructLocationContext *ctx) = 0;
-  virtual void exitStructLocation(decafParser::StructLocationContext *ctx) = 0;
-
   virtual void enterArrayLocation(decafParser::ArrayLocationContext *ctx) = 0;
   virtual void exitArrayLocation(decafParser::ArrayLocationContext *ctx) = 0;
 

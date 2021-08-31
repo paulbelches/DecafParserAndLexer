@@ -29,10 +29,10 @@ program : 'class' 'Program' '{' (declaration)* '}'
 
 declaration
 	: varDeclaration 
-	| structDeclaration
+	| structDeclaration 
 	| methodDeclaration
 	;
-/////////	
+///////// --------------- ver que no este declarado y que el tipo exista
 varDeclaration 
 	: varType  ID  ';' 				#variableDeclaration
 	| varType  ID  '[' NUM ']' ';'  #arrayDeclaration
@@ -40,6 +40,7 @@ varDeclaration
 
 structDeclaration
 	: 'struct' ID '{' (varDeclaration)* '}'
+	| 'struct' ID '{' (varDeclaration)* '}' ';'
 	;
 				
 varType
@@ -50,7 +51,7 @@ varType
 	| structDeclaration
 	| 'void'
 	;
-/////////
+///////// --------------- ver que no este declarado
 methodDeclaration
 	: methodType ID '(' (parameter (',' parameter)*)? ')' block
 	;
@@ -62,7 +63,7 @@ methodType
 	| 'boolean' 
 	| 'void'
 	;
-/////////
+///////// --------------- ver que no este declarado
 parameter 
 	: parameterType ID			#parameterVariable
 	| parameterType ID '[' ']'	#parameterArray
@@ -94,8 +95,8 @@ methodCall
 	;
 
 location
-	: ID									#varIdLocation //check if exist and set type
-	| ID ('.' location)?					#structLocation //check if exist, check if location exist and set type
+	: ID ('.' location)?									#varIdLocation //check if exist and set type
+//	| ID ('.' location)?					#structLocation //check if exist, check if location exist and set type
 	| ID '[' expression ']' ('.' location)?	#arrayLocation //check if exist, if its array and set type
 	;
 
@@ -166,3 +167,7 @@ bool_literal
 	: 'true'
 	| 'false'
 	;
+
+/* 
+struct A{int a;};struct B{int b;struct A c;};
+*/

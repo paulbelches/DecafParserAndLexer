@@ -5,6 +5,7 @@
 #include "./symbolTableHandler.h"
 #include "./typeTableHandler.h"
 #include "./functionTable.h"
+#include "./structTable.h"
 
 #include "decafBaseListener.h"
 
@@ -19,6 +20,7 @@ private:
   SymbolTableHandler symbolTable;
   TypeTableHandler typeTable;
   FunctionTable functionTable;
+  StructTable structTable;
   tree::ParseTreeProperty<string> nodeTypes; //put y get
   tree::ParseTreeProperty<string> nodeValues; //put y get
 
@@ -46,14 +48,22 @@ public:
       nodeTypes.put(ctx, "error");
     } 
   }
-
+  //Check for errors
   virtual void exitVariableDeclaration(decafParser::VariableDeclarationContext *ctx) override {    
-    string type =  ctx->varType()->getText();
     string identifier = ctx->ID()->getText();
-    //add: check if the type exist
-    if (!symbolTable.top().hasElement(identifier)) {
+    string type;
+    if (ctx->varType()->structDeclaration() != 0){
+      //cout << ctx->varType()->structDeclaration()->ID()->getText() << endl;
+      type = "struct"+ctx->varType()->structDeclaration()->ID()->getText();
+    } else {
+      type =  ctx->varType()->getText();
+    }
+    
+    if (typeTable.elementExist(type)){
+      cout << "Error, type " + type + " of variable " + identifier +" does not exist." << endl;
+      nodeTypes.put(ctx, "error");
+    } else if (!symbolTable.top().hasElement(identifier)) {
       int size = typeTable.getSize(type);
-      int id = typeTable.getId(type);
       symbolTable.binding(identifier, type, size);
     } else {
       cout << "Error, " + identifier + " already declared." << endl;
@@ -61,17 +71,46 @@ public:
     }
   }
 
+  virtual void enterStructDeclaration(decafParser::StructDeclarationContext *ctx) override {
+    symbolTable.enter();
+  }
+
+  virtual void exitStructDeclaration(decafParser::StructDeclarationContext *ctx) override {
+    string identifier = ctx->ID()->getText();
+    //Check that struct is not already declared
+    //Check that var declarations where not error
+    if (!symbolTable.top().hasElement(identifier)) {
+      SymbolTable tempSymbolTable = symbolTable.top();
+      structTable.binding("struct"+identifier, tempSymbolTable); 
+      symbolTable.exit();
+      typeTable.binding("struct"+identifier, 0); //Modify size
+      typeTable.binding("struct"+identifier+"[]", 0); //Modify size
+      return;
+    } else {
+      cout << "Error, " + identifier + " already declared." << endl;
+      nodeTypes.put(ctx, "error");
+    }
+    symbolTable.exit();
+    
+  }
+
   virtual void exitArrayDeclaration(decafParser::ArrayDeclarationContext *ctx) override { 
-    string type =  ctx->varType()->getText();
+    string type;
     string identifier = ctx->ID()->getText();
     string num = ctx->NUM()->getText();
-    //add: check if the type exist
-    if (atoi(num.c_str()) < 0){
-      cout << "Error, index in " + identifier + " should be greater than 0." << endl;
+
+    if (ctx->varType()->structDeclaration() != 0){
+      //cout << ctx->varType()->structDeclaration()->ID()->getText() + "[]" << endl;
+      type = "struct"+ctx->varType()->structDeclaration()->ID()->getText() + "[]";
+    } else {
+      type =  ctx->varType()->getText() + "[]";
+    }
+
+    if (typeTable.elementExist(type)){
+      cout << "Error, type " + type + " of variable " + identifier +" does not exist." << endl;
       nodeTypes.put(ctx, "error");
     } else if (!symbolTable.top().hasElement(identifier)) {
       int size = typeTable.getSize(type);
-      int id = typeTable.getId(type);
       symbolTable.binding(identifier, type, atoi(num.c_str()) * size );
     } else {
       cout << "Error, " + identifier + " already declared." << endl;
@@ -113,28 +152,37 @@ public:
     }
   }
 
-  //Fix
-  //Check if it was already declared
   virtual void exitParameterVariable(decafParser::ParameterVariableContext *ctx) override {
     //cout << ctx << " parameter variable" << endl;
     string type =  ctx->parameterType()->getText();
     string identifier = ctx->ID()->getText();
-    int size = typeTable.getSize(type);
-    symbolTable.binding(identifier, type, size);
-    nodeTypes.put(ctx, type);
-    /////////////MOdify
-    functionTable.pushParam(nodeValues.get(ctx), type);
-    /////////////
+    if (!symbolTable.top().hasElement(identifier)) {
+      int size = typeTable.getSize(type);
+      symbolTable.binding(identifier, type, size);
+      nodeTypes.put(ctx, type);
+      /////////////MOdify
+      functionTable.pushParam(nodeValues.get(ctx), type);
+      /////////////
+    } else {
+      cout << "Error, " + identifier + " already declared." << endl;
+      nodeTypes.put(ctx, "error");
+    }
   }
   
-  //Fix
-  //Check if it was already declared
   virtual void exitParameterArray(decafParser::ParameterArrayContext *ctx) override {
-    string type =  ctx->parameterType()->getText();
+    string type =  ctx->parameterType()->getText() + "[]";
     string identifier = ctx->ID()->getText();
-    int size = typeTable.getSize(type);
-    symbolTable.binding(identifier, type, size);
-    nodeTypes.put(ctx, type);
+    if (!symbolTable.top().hasElement(identifier)) {
+      int size = typeTable.getSize(type);
+      symbolTable.binding(identifier, type, size);
+      nodeTypes.put(ctx, type);
+      /////////////MOdify
+      functionTable.pushParam(nodeValues.get(ctx), type);
+      /////////////
+    } else {
+      cout << "Error, " + identifier + " already declared." << endl;
+      nodeTypes.put(ctx, "error");
+    }
   }
 
   virtual void exitBlock(decafParser::BlockContext *ctx) override {
@@ -254,15 +302,76 @@ public:
     }
   }
 
+
+  //Si es un struct
+  //Revisar que el tipo exista en la tabla de struct
+  //Revisar que el atributo exista en el struct
+  //si si actualizar el tipo
+
   virtual void exitVarIdLocation(decafParser::VarIdLocationContext *ctx) override { 
     string identifier = ctx->ID()->getText();
     string type = symbolTable.getType(identifier);
+    if (ctx->location() != 0){
+      if (structTable.hasElement(type)){
+        if (structTable.lookup(type).hasElement(ctx->location()->getText())){
+          type = structTable.lookup(type).lookup(ctx->location()->getText()).dataType;
+        } else {
+          cout << "Error, type " + type + " has no atribute "+ctx->location()->getText() + "." << endl;
+          nodeTypes.put(ctx, "error");
+          return;
+        }
+      } else {
+        cout << "Error, type " + type + "  is not a struct." << endl;
+        nodeTypes.put(ctx, "error");
+        return;
+      }
+    }
     if (symbolTable.elementExist(identifier) != -1){
       nodeTypes.put( ctx, type );
     } else {
       cout << "Error, variable " + identifier + " does not exist." << endl;
       nodeTypes.put(ctx, "error");
     }
+  }
+
+  virtual void exitArrayLocation(decafParser::ArrayLocationContext *ctx) override {
+    string identifier = ctx->ID()->getText();
+    string type = symbolTable.getType(identifier);
+    //remove array from type
+    if (type[type.size()-1] == ']' && type[type.size()-2] == '[') {
+      type = type.substr(0, type.size()-2);
+    } else {
+      cout << "Error, " + identifier + " is not and array." << endl;
+      nodeTypes.put(ctx, "error");
+      return;
+    }
+    //check if it is a struct
+    if (ctx->location() != 0){
+      cout << type << identifier << endl;
+      //check struct type exist
+      if (structTable.hasElement(type)){
+        //check if atribute exist
+        if (structTable.lookup(type).hasElement(ctx->location()->getText())){
+          //Get atribute type
+          type = structTable.lookup(type).lookup(ctx->location()->getText()).dataType;
+        } else {
+          cout << "Error, type " + type + " has no atribute "+ctx->location()->getText() + "." << endl;
+          nodeTypes.put(ctx, "error");
+          return;
+        }
+      } else {
+        cout << "Error, type " + type + " is not a struct." << endl;
+        nodeTypes.put(ctx, "error");
+        return;
+      }
+    }
+    if (symbolTable.elementExist(identifier) != -1){
+      nodeTypes.put( ctx, type );
+    } else {
+      cout << "Error, array " + identifier + " does not exist." << endl;
+      nodeTypes.put(ctx, "error");
+    }
+
   }
 
 //////////////////////////////////////////////////////////////////////////////

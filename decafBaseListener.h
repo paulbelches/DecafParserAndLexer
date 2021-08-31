@@ -76,9 +76,6 @@ public:
   virtual void enterVarIdLocation(decafParser::VarIdLocationContext * /*ctx*/) override { }
   virtual void exitVarIdLocation(decafParser::VarIdLocationContext * /*ctx*/) override { }
 
-  virtual void enterStructLocation(decafParser::StructLocationContext * /*ctx*/) override { }
-  virtual void exitStructLocation(decafParser::StructLocationContext * /*ctx*/) override { }
-
   virtual void enterArrayLocation(decafParser::ArrayLocationContext * /*ctx*/) override { }
   virtual void exitArrayLocation(decafParser::ArrayLocationContext * /*ctx*/) override { }
 

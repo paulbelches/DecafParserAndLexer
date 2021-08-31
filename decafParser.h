@@ -368,15 +368,6 @@ public:
     VarIdLocationContext(LocationContext *ctx);
 
     antlr4::tree::TerminalNode *ID();
-    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
-    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-  };
-
-  class  StructLocationContext : public LocationContext {
-  public:
-    StructLocationContext(LocationContext *ctx);
-
-    antlr4::tree::TerminalNode *ID();
     LocationContext *location();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
