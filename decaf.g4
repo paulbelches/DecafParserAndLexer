@@ -14,9 +14,7 @@ fragment DIGIT : '0'..'9' ;
 
 fragment LETTER : ('a'..'z'|'A'..'Z'|'_') ;
 
-WS
-   : [ \t\n\r] + -> skip
-   ;
+WS :  [ \t\r\n] -> skip;
 
 
 /*------------------------------------------------------------------
@@ -91,11 +89,11 @@ statement
 
 /*+++++++++++*/
 methodCall
-	: ID '(' (arg) (',' arg)*')' //set arg types,  check if exist, set return type
+	: ID '(' (arg (',' arg)*)? ')' //set arg types,  check if exist, set return type
 	;
 
 location
-	: ID ('.' location)?									#varIdLocation //check if exist and set type
+	: ID ('.' location)?					#varIdLocation //check if exist and set type
 //	| ID ('.' location)?					#structLocation //check if exist, check if location exist and set type
 	| ID '[' expression ']' ('.' location)?	#arrayLocation //check if exist, if its array and set type
 	;
@@ -103,10 +101,10 @@ location
 //Array verification
 ///////////
 expression
-	: location					#expressionLocation ///
-	| methodCall				#expressionMethodCall ///
-	| literal					#expressionLiteral ////
+	: methodCall				#expressionMethodCall ///
 	| expression op expression	#expressionPair ////
+	| location					#expressionLocation ///
+	| literal					#expressionLiteral ////
 	| '-' expression			#expressionNegativ ////
 	| '!' expression			#expressionNegation ////
 	| '(' expression ')'		#expressionParentesis ////
