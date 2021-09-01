@@ -41,10 +41,10 @@ public:
   virtual void exitProgram(decafParser::ProgramContext *ctx) override {
     //The program contains a main definition without params
     if (!functionTable.hasElement("main")) {
-      cout << "Error, no main method declared." << endl;
+      cout << "line "<< ctx->start->getLine() <<", no main method declared." << endl;
       nodeTypes.put(ctx, "error");
     } else if (functionTable.paramsAmount("main") > 0) {
-      cout << "Error, main has unnecesary arguments." << endl;
+      cout << "line "<< ctx->start->getLine() <<", main has unnecesary arguments." << endl;
       nodeTypes.put(ctx, "error");
     } 
   }
@@ -60,13 +60,13 @@ public:
     }
     
     if (typeTable.elementExist(type)){
-      cout << "Error, type " + type + " of variable " + identifier +" does not exist." << endl;
+      cout << "line "<< ctx->start->getLine() <<", type " + type + " of variable " + identifier +" does not exist." << endl;
       nodeTypes.put(ctx, "error");
     } else if (!symbolTable.top().hasElement(identifier)) {
       int size = typeTable.getSize(type);
       symbolTable.binding(identifier, type, size);
     } else {
-      cout << "Error, " + identifier + " already declared." << endl;
+      cout << "line "<< ctx->start->getLine() <<", " + identifier + " already declared." << endl;
       nodeTypes.put(ctx, "error");
     }
   }
@@ -87,7 +87,7 @@ public:
       typeTable.binding("struct"+identifier+"[]", 0); //Modify size
       return;
     } else {
-      cout << "Error, " + identifier + " already declared." << endl;
+      cout << "line "<< ctx->start->getLine() <<", " + identifier + " already declared." << endl;
       nodeTypes.put(ctx, "error");
     }
     symbolTable.exit();
@@ -107,13 +107,13 @@ public:
     }
 
     if (typeTable.elementExist(type)){
-      cout << "Error, type " + type + " of variable " + identifier +" does not exist." << endl;
+      cout << "line "<< ctx->start->getLine() <<", type " + type + " of variable " + identifier +" does not exist." << endl;
       nodeTypes.put(ctx, "error");
     } else if (!symbolTable.top().hasElement(identifier)) {
       int size = typeTable.getSize(type);
       symbolTable.binding(identifier, type, atoi(num.c_str()) * size );
     } else {
-      cout << "Error, " + identifier + " already declared." << endl;
+      cout << "line "<< ctx->start->getLine() <<", " + identifier + " already declared." << endl;
       nodeTypes.put(ctx, "error");
     }
   }
@@ -134,7 +134,7 @@ public:
       functionTable.binding(identifier, type, params);
       nodeTypes.put(ctx, type);
     } else {
-      cout << "Error, method " + identifier + " already declared." << endl;
+      cout << "line "<< ctx->start->getLine() <<", method " + identifier + " already declared." << endl;
       nodeTypes.put(ctx, "error");
     }
   }
@@ -149,11 +149,11 @@ public:
 
     if (blockType == "error"){
       nodeTypes.put(ctx, "error");
-      cout << "Error in method declaration" << endl;
+      //cout << "Error in method declaration" << endl;
     } else if (methodType != blockType){
       //cout << methodType << endl;
       //cout << blockReturnType << endl;
-      cout << "Error, method " + identifier + " expected return " + methodType + " but " + blockType + " returned" << endl;
+      cout << "line "<< ctx->start->getLine() <<", method " + identifier + " expected return " + methodType + " but " + blockType + " returned" << endl;
       nodeTypes.put(ctx, "error");
     }
   }
@@ -170,7 +170,7 @@ public:
       functionTable.pushParam(nodeValues.get(ctx), type);
       /////////////
     } else {
-      cout << "Error, " + identifier + " already declared." << endl;
+      cout << "line "<< ctx->start->getLine() <<" " + identifier + " already declared." << endl;
       nodeTypes.put(ctx, "error");
     }
   }
@@ -186,7 +186,7 @@ public:
       functionTable.pushParam(nodeValues.get(ctx), type);
       /////////////
     } else {
-      cout << "Error, " + identifier + " already declared." << endl;
+      cout << "line "<< ctx->start->getLine() <<", " + identifier + " already declared." << endl;
       nodeTypes.put(ctx, "error");
     }
   }
@@ -212,7 +212,7 @@ public:
           return; 
         } else {
           if (nodeValues.get(ctx) != type){
-            cout << "Error, multiple types return in method" << endl;
+            cout << "line "<< ctx->start->getLine() <<", multiple types return in method" << endl;
             nodeTypes.put(ctx, "error");
             return;
           }
@@ -237,12 +237,12 @@ public:
           nodeTypes.put(ctx, block2Type);
         } else {
           nodeTypes.put(ctx, "error");
-          cout << "Error, if statement returns two diferent types" << endl;
+          cout << "line "<< ctx->start->getLine() <<", if statement returns two diferent types" << endl;
         }
       }
     } else {
       nodeTypes.put(ctx, "error");
-      cout << "Error, if statement with no boolean conditional" << endl;
+      cout << "line "<< ctx->start->getLine() <<", if statement with no boolean conditional" << endl;
     }
   }
 
@@ -256,7 +256,7 @@ public:
       nodeTypes.put(ctx, nodeTypes.get(ctx->block()));
     } else {
       nodeTypes.put(ctx , "error");
-      cout << "Error, while statement with no boolean conditional" << endl;
+      cout << "line "<< ctx->start->getLine() <<", while statement with no boolean conditional" << endl;
     }
   }
 
@@ -280,7 +280,7 @@ public:
     } else if (expressionType == locationType){
       nodeTypes.put( ctx, "void" );
     } else {
-      cout << "Error, cannot asign " << expressionType << " to " << locationType << endl;
+      cout << "line "<< ctx->start->getLine() <<", cannot asign " << expressionType << " to " << locationType << endl;
       nodeTypes.put(ctx, "error");
     }
   }
@@ -311,7 +311,7 @@ public:
         nodeTypes.put(ctx, functionTable.getType(identifier));
       } else {
         //Print error message
-        cout << "Error, expected paramters ( ";
+        cout << "line "<< ctx->start->getLine() <<", expected paramters ( ";
         for (int i = 0; i < methodParams.size(); i++){
           cout << methodParams[i]  << " ";
         }
@@ -324,7 +324,7 @@ public:
         nodeTypes.put(ctx, "error");
       }
     } else {
-      cout << "Error, method " + identifier + " not declared." << endl;
+      cout << "line "<< ctx->start->getLine() <<", method " + identifier + " not declared." << endl;
       nodeTypes.put(ctx, "error");
     }
   }
