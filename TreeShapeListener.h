@@ -333,74 +333,115 @@ public:
   //Revisar que el atributo exista en el struct
   //si si actualizar el tipo
 
-  virtual void exitVarIdLocation(decafParser::VarIdLocationContext *ctx) override { 
-    string identifier = ctx->ID()->getText();
-    string type = symbolTable.getType(identifier);
-    /*
-    if (ctx->location() != 0){
-      if (structTable.hasElement(type)){
-        if (structTable.lookup(type).hasElement(ctx->location()->getText())){
-          type = structTable.lookup(type).lookup(ctx->location()->getText()).dataType;
+  virtual void enterVarIdLocation(decafParser::VarIdLocationContext *ctx) override {
+    //Check if it is a son node
+    if (nodeValues.get(ctx) == "son" ){
+      string parentType = nodeTypes.get( ctx->parent);
+      string identifier = ctx->ID()->getText();
+      //Check that parent is a struct
+      if (structTable.hasElement(parentType)){
+        //Check atribute exist
+        if (structTable.lookup(parentType).hasElement(identifier)){
+          //Get the atributes type
+          string type = structTable.lookup(parentType).lookup(identifier).dataType;
+          nodeTypes.put(ctx, type);
         } else {
-          cout << "Error, type " + type + " has no atribute "+ctx->location()->getText() + "." << endl;
+          cout << "Error, type " + parentType + " has no atribute "+ identifier + "." << endl;
           nodeTypes.put(ctx, "error");
           return;
         }
       } else {
-        cout << "Error, type " + type + "  is not a struct." << endl;
+        cout << "Error, type " + parentType + "  is not a struct." << endl;
         nodeTypes.put(ctx, "error");
         return;
       }
-    }*/
-    //Check if it is a valid identifier
-    if (symbolTable.elementExist(identifier) != -1){
-      nodeTypes.put( ctx, type );
+    //Check if it is a parent node
     } else {
-      cout << "Error, variable " + identifier + " does not exist." << endl;
-      nodeTypes.put(ctx, "error");
+      string identifier = ctx->ID()->getText();
+      //Check it exist on the symbol table
+      if (symbolTable.elementExist(identifier) != -1){
+        //Get type from symbol table
+        string type = symbolTable.getType(identifier);
+        nodeTypes.put( ctx, type );
+      } else {
+        cout << "Error, variable " + identifier + " does not exist." << endl;
+        nodeTypes.put(ctx, "error");
+      }
     }
+    if (ctx->location() != 0){
+      nodeValues.put(ctx->location(), "son");
+    }
+  }
+  
+  virtual void exitVarIdLocation(decafParser::VarIdLocationContext *ctx) override {
+    if (nodeValues.get(ctx) == "son" ){
+      string type = nodeTypes.get(ctx);
+      nodeTypes.put(ctx->parent, type);
+    } 
+  }
+
+  virtual void enterArrayLocation(decafParser::ArrayLocationContext *ctx) override {
+    //Check if it is a son node
+    if (nodeValues.get(ctx) == "son" ){
+      string parentType = nodeTypes.get( ctx->parent);
+      string identifier = ctx->ID()->getText();
+      //Check that parent is a struct
+      if (structTable.hasElement(parentType)){
+        //Check atribute exist
+        if (structTable.lookup(parentType).hasElement(identifier)){
+          //Get the atributes type
+          string type = structTable.lookup(parentType).lookup(identifier).dataType;
+          // Check if it is a array
+          if (type[type.size()-1] == ']' && type[type.size()-2] == '[') {
+            type = type.substr(0, type.size()-2);
+            nodeTypes.put( ctx, type );
+          } else {
+            cout << "Error, " + identifier + " is not and array." << endl;
+            nodeTypes.put(ctx, "error");
+            return;
+          }
+        } else {
+          cout << "Error, type " + parentType + " has no atribute "+ identifier + "." << endl;
+          nodeTypes.put(ctx, "error");
+          return;
+        }
+      } else {
+        cout << "Error, type " + parentType + "  is not a struct." << endl;
+        nodeTypes.put(ctx, "error");
+        return;
+      }
+    //Check if it is a parent node
+    } else {
+      string identifier = ctx->ID()->getText();
+      //Check it exist on the symbol table
+      if (symbolTable.elementExist(identifier) != -1){
+        //Get type from symbol table
+        string type = symbolTable.getType(identifier);
+        // Check if it is a array
+        if (type[type.size()-1] == ']' && type[type.size()-2] == '[') {
+          type = type.substr(0, type.size()-2);
+          nodeTypes.put( ctx, type );
+        } else {
+          cout << "Error, " + identifier + " is not and array." << endl;
+          nodeTypes.put(ctx, "error");
+          return;
+        }
+      } else {
+        cout << "Error, variable " + identifier + " does not exist." << endl;
+        nodeTypes.put(ctx, "error");
+      }
+    }
+    if (ctx->location() != 0){
+      nodeValues.put(ctx->location(), "son");
+    }
+
   }
 
   virtual void exitArrayLocation(decafParser::ArrayLocationContext *ctx) override {
-    string identifier = ctx->ID()->getText();
-    string type = symbolTable.getType(identifier);
-    //remove array from type
-    if (type[type.size()-1] == ']' && type[type.size()-2] == '[') {
-      type = type.substr(0, type.size()-2);
-    } else {
-      cout << "Error, " + identifier + " is not and array." << endl;
-      nodeTypes.put(ctx, "error");
-      return;
-    }
-    /*
-    //check if it is a struct
-    if (ctx->location() != 0){
-      cout << type << identifier << endl;
-      //check struct type exist
-      if (structTable.hasElement(type)){
-        //check if atribute exist
-        if (structTable.lookup(type).hasElement(ctx->location()->getText())){
-          //Get atribute type
-          type = structTable.lookup(type).lookup(ctx->location()->getText()).dataType;
-        } else {
-          cout << "Error, type " + type + " has no atribute "+ctx->location()->getText() + "." << endl;
-          nodeTypes.put(ctx, "error");
-          return;
-        }
-      } else {
-        cout << "Error, type " + type + " is not a struct." << endl;
-        nodeTypes.put(ctx, "error");
-        return;
-      }
-    }*/
-    //Check if it is a valid identifier
-    if (symbolTable.elementExist(identifier) != -1){
-      nodeTypes.put( ctx, type );
-    } else {
-      cout << "Error, array " + identifier + " does not exist." << endl;
-      nodeTypes.put(ctx, "error");
-    }
-
+    if (nodeValues.get(ctx) == "son" ){
+      string type = nodeTypes.get(ctx);
+      nodeTypes.put(ctx->parent, type);
+    } 
   }
 
 //////////////////////////////////////////////////////////////////////////////
