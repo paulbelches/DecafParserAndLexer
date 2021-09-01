@@ -120,6 +120,7 @@ public:
 
   virtual void enterMethodDeclaration(decafParser::MethodDeclarationContext *ctx) override {
     symbolTable.enter();
+    //typeTable.enter();
     string type =  ctx->methodType()->getText();
     string identifier = ctx->ID()->getText();
     if (!functionTable.hasElement(identifier)){
@@ -140,6 +141,7 @@ public:
 
   virtual void exitMethodDeclaration(decafParser::MethodDeclarationContext *ctx) override {
     symbolTable.exit();
+    //typeTable.exit();
     string identifier = ctx->ID()->getText();
     string blockType = nodeTypes.get(ctx->block());
     //string blockReturnType = nodeValues.get(ctx->block());
@@ -327,17 +329,19 @@ public:
     }
   }
 
-
-  //Si es un struct
-  //Revisar que el tipo exista en la tabla de struct
-  //Revisar que el atributo exista en el struct
-  //si si actualizar el tipo
-
   virtual void enterVarIdLocation(decafParser::VarIdLocationContext *ctx) override {
+    if (ctx->location() != 0){
+      nodeValues.put(ctx->location(), "son");
+    }
     //Check if it is a son node
     if (nodeValues.get(ctx) == "son" ){
       string parentType = nodeTypes.get( ctx->parent);
       string identifier = ctx->ID()->getText();
+      //Check if parent is error 
+      if (parentType == "error"){
+        nodeTypes.put( ctx , "error");
+        return;
+      }
       //Check that parent is a struct
       if (structTable.hasElement(parentType)){
         //Check atribute exist
@@ -351,7 +355,7 @@ public:
           return;
         }
       } else {
-        cout << "Error, type " + parentType + "  is not a struct." << endl;
+        cout << "Error, type " + parentType + " is not a struct." << endl;
         nodeTypes.put(ctx, "error");
         return;
       }
@@ -368,9 +372,6 @@ public:
         nodeTypes.put(ctx, "error");
       }
     }
-    if (ctx->location() != 0){
-      nodeValues.put(ctx->location(), "son");
-    }
   }
   
   virtual void exitVarIdLocation(decafParser::VarIdLocationContext *ctx) override {
@@ -381,10 +382,18 @@ public:
   }
 
   virtual void enterArrayLocation(decafParser::ArrayLocationContext *ctx) override {
+    if (ctx->location() != 0){
+      nodeValues.put(ctx->location(), "son");
+    }
     //Check if it is a son node
     if (nodeValues.get(ctx) == "son" ){
       string parentType = nodeTypes.get( ctx->parent);
       string identifier = ctx->ID()->getText();
+      //Check if parent is error 
+      if (parentType == "error"){
+        nodeTypes.put( ctx , "error");
+        return;
+      }
       //Check that parent is a struct
       if (structTable.hasElement(parentType)){
         //Check atribute exist
@@ -431,10 +440,6 @@ public:
         nodeTypes.put(ctx, "error");
       }
     }
-    if (ctx->location() != 0){
-      nodeValues.put(ctx->location(), "son");
-    }
-
   }
 
   virtual void exitArrayLocation(decafParser::ArrayLocationContext *ctx) override {

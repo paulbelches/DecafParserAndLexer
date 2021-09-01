@@ -1,27 +1,18 @@
 class Program
 {
-struct MyTest
-{
-	int n;
-	char b;
-	int c[10];
-};
-
-struct OtherTest
-{
-	struct MyTest T[10];
-	int n;
-};
-
-
-void main()
-{
-	struct OtherTest M[5];
-	int i;
-	i = 1;	
-	M[i].T[1].n = true;
-	M[i].T[1].c[0] = 'a';
-	
-}
-
+  	struct new {
+    	int a;
+    	int b;
+  	};
+	void method(){
+		struct new {
+    		boolean a;
+    		boolean b;
+  		}; a;
+	}
+	struct new n;
+	void main()
+	{
+		n.a.b.c.d.e = 1;
+	}
 }
