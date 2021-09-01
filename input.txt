@@ -13,6 +13,6 @@ class Program
 	struct new n;
 	void main()
 	{
-		n.a.b.c.d.e = 1;
+		n.a.b = 1;
 	}
 }

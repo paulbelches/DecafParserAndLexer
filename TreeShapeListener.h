@@ -350,12 +350,12 @@ public:
           string type = structTable.lookup(parentType).lookup(identifier).dataType;
           nodeTypes.put(ctx, type);
         } else {
-          cout << "Error, type " + parentType + " has no atribute "+ identifier + "." << endl;
+          cout << "line "<< ctx->start->getLine() <<", type " + parentType + " has no atribute "+ identifier + "." << endl;
           nodeTypes.put(ctx, "error");
           return;
         }
       } else {
-        cout << "Error, type " + parentType + " is not a struct." << endl;
+        cout << "line "<< ctx->start->getLine() <<", type " + parentType + " is not a struct." << endl;
         nodeTypes.put(ctx, "error");
         return;
       }
@@ -368,7 +368,7 @@ public:
         string type = symbolTable.getType(identifier);
         nodeTypes.put( ctx, type );
       } else {
-        cout << "Error, variable " + identifier + " does not exist." << endl;
+        cout << "line "<< ctx->start->getLine() <<", variable " + identifier + " does not exist." << endl;
         nodeTypes.put(ctx, "error");
       }
     }
@@ -405,17 +405,17 @@ public:
             type = type.substr(0, type.size()-2);
             nodeTypes.put( ctx, type );
           } else {
-            cout << "Error, " + identifier + " is not and array." << endl;
+            cout << "line "<< ctx->start->getLine() <<", " + identifier + " is not and array." << endl;
             nodeTypes.put(ctx, "error");
             return;
           }
         } else {
-          cout << "Error, type " + parentType + " has no atribute "+ identifier + "." << endl;
+          cout << "line "<< ctx->start->getLine() <<"r, type " + parentType + " has no atribute "+ identifier + "." << endl;
           nodeTypes.put(ctx, "error");
           return;
         }
       } else {
-        cout << "Error, type " + parentType + "  is not a struct." << endl;
+        cout << "line "<< ctx->start->getLine() <<", type " + parentType + "  is not a struct." << endl;
         nodeTypes.put(ctx, "error");
         return;
       }
@@ -431,12 +431,12 @@ public:
           type = type.substr(0, type.size()-2);
           nodeTypes.put( ctx, type );
         } else {
-          cout << "Error, " + identifier + " is not and array." << endl;
+          cout << "line "<< ctx->start->getLine() <<", " + identifier + " is not and array." << endl;
           nodeTypes.put(ctx, "error");
           return;
         }
       } else {
-        cout << "Error, variable " + identifier + " does not exist." << endl;
+        cout << "line "<< ctx->start->getLine() <<", variable " + identifier + " does not exist." << endl;
         nodeTypes.put(ctx, "error");
       }
     }
@@ -469,7 +469,7 @@ public:
         return;
       } else {
         nodeTypes.put(ctx, "error");
-        cout << "Error, incompatible types " << exp1Type << " and " << exp2Type << endl;
+        cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type << endl;
         return;
       }
     } else if (opType == "eq")  {
@@ -478,7 +478,7 @@ public:
         return;
       } else {
         nodeTypes.put(ctx, "error");
-        cout << "Error, incompatible types " << exp1Type << " and " << exp2Type << endl;
+        cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type << endl;
         return;
       }
     } else if (opType == "rel")  {
@@ -487,7 +487,7 @@ public:
         return;
       } else {
         nodeTypes.put(ctx, "error");
-        cout << "Error, incompatible types " << exp1Type << " and " << exp2Type << endl;
+        cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type << endl;
         return;
       }
     } else if (opType == "arith")  {
@@ -496,7 +496,7 @@ public:
         return;
       } else {
         nodeTypes.put(ctx, "error");
-        cout << "Error, incompatible types " << exp1Type << " and " << exp2Type  << endl;
+        cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type  << endl;
         return;
       }
     }
@@ -525,7 +525,7 @@ public:
       nodeValues.put( ctx, nodeValues.get(ctx->expression()) ); // update to real, negativ value?
     } else {
       nodeTypes.put( ctx, "error" );
-      cout << "Error, incompatible type " + nodeTypes.get(ctx->expression()) + " and operator \"-\"." << endl;
+      cout << "line "<< ctx->start->getLine() <<", incompatible type " + nodeTypes.get(ctx->expression()) + " and operator \"-\"." << endl;
     }
   }
 
@@ -537,14 +537,14 @@ public:
       nodeValues.put( ctx, nodeValues.get(ctx->expression()) );
     } else {
       nodeTypes.put( ctx, "error" );
-      cout << "Error, incompatible type " + nodeTypes.get(ctx->expression()) + " and operator \"!\"." << endl;
+      cout << "line "<< ctx->start->getLine() <<" incompatible type " + nodeTypes.get(ctx->expression()) + " and operator \"!\"." << endl;
     }
   }
 
   virtual void exitExpressionParentesis(decafParser::ExpressionParentesisContext *ctx) override {
     if (nodeTypes.get(ctx->expression()) == "void") {
       nodeTypes.put( ctx, "error" );
-      cout << "Error, expressions cannot be void." << endl;
+      cout << "line "<< ctx->start->getLine() <<", expressions cannot be void." << endl;
     } else {
       nodeTypes.put( ctx, nodeTypes.get(ctx->expression()) );
       nodeValues.put( ctx, nodeValues.get(ctx->expression()) );
