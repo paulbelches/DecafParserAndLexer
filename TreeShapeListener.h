@@ -443,6 +443,24 @@ public:
   }
 
   virtual void exitArrayLocation(decafParser::ArrayLocationContext *ctx) override {
+    //Check if the index is a int and if it is negativ 
+    if (nodeTypes.get(ctx->expression()) == "int"){
+      try { 
+        int value = stoi(ctx->expression()->getText());
+        if (value < 0){
+          cout << "line "<< ctx->start->getLine() <<", negativ index." << endl;
+          nodeTypes.put(ctx, "error");
+        }
+      } catch(exception) {
+        ;
+      }
+    } else {
+      cout << "line "<< ctx->start->getLine() <<", index of type "+ nodeTypes.get(ctx->expression())<< endl;
+      nodeTypes.put(ctx, "error");
+    }
+    
+
+    ///
     if (nodeValues.get(ctx) == "son" ){
       string type = nodeTypes.get(ctx);
       nodeTypes.put(ctx->parent, type);
