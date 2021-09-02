@@ -59,7 +59,7 @@ public:
       type =  ctx->varType()->getText();
     }
     
-    if (typeTable.elementExist(type)){
+    if (typeTable.elementExist(type) < 0){
       cout << "line "<< ctx->start->getLine() <<", type " + type + " of variable " + identifier +" does not exist." << endl;
       nodeTypes.put(ctx, "error");
     } else if (!symbolTable.top().hasElement(identifier)) {
@@ -106,7 +106,8 @@ public:
       type =  ctx->varType()->getText() + "[]";
     }
 
-    if (typeTable.elementExist(type)){
+    //cout << "CONTROL" << typeTable.elementExist(type) << endl;
+    if (typeTable.elementExist(type) < 0){
       cout << "line "<< ctx->start->getLine() <<", type " + type + " of variable " + identifier +" does not exist." << endl;
       nodeTypes.put(ctx, "error");
     } else if (!symbolTable.top().hasElement(identifier)) {
@@ -120,11 +121,10 @@ public:
 
   virtual void enterMethodDeclaration(decafParser::MethodDeclarationContext *ctx) override {
     symbolTable.enter();
-    //typeTable.enter();
+    typeTable.enter();
     string type =  ctx->methodType()->getText();
     string identifier = ctx->ID()->getText();
     if (!functionTable.hasElement(identifier)){
-      int id = typeTable.getId(type);
       int parameterCount = 0;
       vector<string> params;
       while (ctx->parameter(parameterCount) != 0){
@@ -141,7 +141,7 @@ public:
 
   virtual void exitMethodDeclaration(decafParser::MethodDeclarationContext *ctx) override {
     symbolTable.exit();
-    //typeTable.exit();
+    typeTable.exit();
     string identifier = ctx->ID()->getText();
     string blockType = nodeTypes.get(ctx->block());
     //string blockReturnType = nodeValues.get(ctx->block());
@@ -458,8 +458,6 @@ public:
       cout << "line "<< ctx->start->getLine() <<", index of type "+ nodeTypes.get(ctx->expression())<< endl;
       nodeTypes.put(ctx, "error");
     }
-    
-
     ///
     if (nodeValues.get(ctx) == "son" ){
       string type = nodeTypes.get(ctx);
