@@ -5,7 +5,7 @@
 #include "./symbolTableHandler.h"
 #include "./typeTableHandler.h"
 #include "./functionTable.h"
-#include "./structTable.h"
+#include "./structTableHandler.h"
 
 #include "decafBaseListener.h"
 
@@ -20,7 +20,7 @@ private:
   SymbolTableHandler symbolTable;
   TypeTableHandler typeTable;
   FunctionTable functionTable;
-  StructTable structTable;
+  StructTableHandler structTable;
   tree::ParseTreeProperty<string> nodeTypes; //put y get
   tree::ParseTreeProperty<string> nodeValues; //put y get
 
@@ -29,6 +29,7 @@ public:
   virtual void enterProgram(decafParser::ProgramContext *ctx) override { 
     symbolTable.enter();
     typeTable.enter();
+    structTable.enter();
     typeTable.binding("void", 0);
     typeTable.binding("int", 4);
     typeTable.binding("char", 2);
@@ -122,6 +123,7 @@ public:
   virtual void enterMethodDeclaration(decafParser::MethodDeclarationContext *ctx) override {
     symbolTable.enter();
     typeTable.enter();
+    structTable.enter();
     string type =  ctx->methodType()->getText();
     string identifier = ctx->ID()->getText();
     if (!functionTable.hasElement(identifier)){
@@ -142,6 +144,7 @@ public:
   virtual void exitMethodDeclaration(decafParser::MethodDeclarationContext *ctx) override {
     symbolTable.exit();
     typeTable.exit();
+    structTable.exit();
     string identifier = ctx->ID()->getText();
     string blockType = nodeTypes.get(ctx->block());
     //string blockReturnType = nodeValues.get(ctx->block());
@@ -343,11 +346,11 @@ public:
         return;
       }
       //Check that parent is a struct
-      if (structTable.hasElement(parentType)){
+      if (structTable.elementExist(parentType)> -1){
         //Check atribute exist
-        if (structTable.lookup(parentType).hasElement(identifier)){
+        if (structTable.hasChild(parentType,identifier)){
           //Get the atributes type
-          string type = structTable.lookup(parentType).lookup(identifier).dataType;
+          string type = structTable.getChildType(parentType,identifier);
           nodeTypes.put(ctx, type);
         } else {
           cout << "line "<< ctx->start->getLine() <<", type " + parentType + " has no atribute "+ identifier + "." << endl;
@@ -395,11 +398,11 @@ public:
         return;
       }
       //Check that parent is a struct
-      if (structTable.hasElement(parentType)){
+      if (structTable.elementExist(parentType) > -1){
         //Check atribute exist
-        if (structTable.lookup(parentType).hasElement(identifier)){
+        if (structTable.hasChild(parentType,identifier)){
           //Get the atributes type
-          string type = structTable.lookup(parentType).lookup(identifier).dataType;
+          string type = structTable.getChildType(parentType,identifier);
           // Check if it is a array
           if (type[type.size()-1] == ']' && type[type.size()-2] == '[') {
             type = type.substr(0, type.size()-2);
