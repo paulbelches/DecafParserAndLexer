@@ -1,0 +1,100 @@
+  .text{
+    background-color:#30353A;
+    resize:none;
+    color: white;
+    font-family: Menlo, Monaco, "Consolas", "Courier New", "Courier";
+    font-size: 11pt;
+    border: none;
+    overflow: auto;
+    outline: none;
+  }
+
+  textarea {
+    background: url(http://i.imgur.com/2cOaJ.png);
+    background-attachment: local;
+    background-repeat: no-repeat;
+    padding-left: 35px;
+    padding-top: 10px;
+    border-color: #30353A;
+  }
+  
+  .terminal-window {
+    text-align: left;
+    width: 910px;
+    height: 700px;
+    border-radius: 10px;
+    margin: auto;
+    position: relative;
+  }
+  
+  .terminal-window header {
+    background: #E0E8F0;
+    height: 30px;
+    border-radius: 8px 8px 0 0;
+    padding-left: 10px;
+  }
+  
+  .terminal-window header .button {
+    width: 12px;
+    height: 12px;
+    margin: 10px 4px 0 0;
+    display: inline-block;
+    border-radius: 8px;
+  }
+  
+  .terminal-window header .button.green {
+    background: #3BB662;
+  }
+  
+  .terminal-window header .button.yellow {
+    background: #E5C30F;
+  }
+  
+  .terminal-window header .button.red {
+    background: #E75448;
+  }
+  
+  .terminal-window section.terminal {
+    color: white;
+    font-family: Menlo, Monaco, "Consolas", "Courier New", "Courier";
+    font-size: 11pt;
+    background: #30353A;
+    padding: 10px;
+    box-sizing: border-box;
+    position: absolute;
+    width: 100%;
+    top: 30px;
+    bottom: 0;
+    overflow: auto;
+  }
+  
+  .terminal-window section.terminal .typed-cursor {
+      opacity: 1;
+      -webkit-animation: blink 0.7s infinite;
+      -moz-animation: blink 0.7s infinite;
+      animation: blink 0.7s infinite;
+  }
+
+  /* width */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+  }
+  
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888; 
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+  }
+  
+  .terminal-data { display: none; }
+  .terminal-window .gray { color: gray; }
+  .terminal-window .green { color: green;}
