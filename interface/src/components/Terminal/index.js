@@ -1,6 +1,6 @@
 
 import React from "react"
-import css from './terminal.css'
+import css from './terminal.css'  // eslint-disable-next-line
 
 const  Terminal = (props) => {
     return( 
