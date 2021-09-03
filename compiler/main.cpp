@@ -22,9 +22,17 @@ using namespace std;
 
 
 int main(int argc, const char* argv[]) {
-  //Read file
-  std::ifstream stream;
-  stream.open("input.txt");
+  //cout << "You have entered " << argc << " arguments:" << "\n";
+  string stream;
+  if (argc > 1){
+    stream = argv[1];
+  } else {
+    //Read file
+    /*
+    std::ifstream stream;
+    stream.open("input.txt");
+    */
+  }
   //Convert Stream
   ANTLRInputStream input(stream);
   //Call lexer

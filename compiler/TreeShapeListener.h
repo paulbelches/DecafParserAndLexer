@@ -225,6 +225,11 @@ public:
     nodeTypes.put( ctx, "void" );
   }
 
+  virtual void enterIfStatement(decafParser::IfStatementContext *ctx) override { 
+    symbolTable.enter();
+    typeTable.enter();
+    structTable.enter();
+  }
   virtual void exitIfStatement(decafParser::IfStatementContext *ctx) override { 
     string expressionType = nodeTypes.get(ctx->expression());
     string blockType = nodeTypes.get(ctx->block()[0]);
@@ -247,8 +252,16 @@ public:
       nodeTypes.put(ctx, "error");
       cout << "line "<< ctx->start->getLine() <<", if statement with no boolean conditional" << endl;
     }
+    symbolTable.exit();
+    typeTable.exit();
+    structTable.exit();
   }
 
+  virtual void enterWhileStatement(decafParser::WhileStatementContext *ctx) override {
+    symbolTable.enter();
+    typeTable.enter();
+    structTable.enter();
+  }
   virtual void exitWhileStatement(decafParser::WhileStatementContext *ctx) override {
     string expressionType = nodeTypes.get(ctx->expression());
     string blockType = nodeTypes.get(ctx->block());
@@ -261,6 +274,9 @@ public:
       nodeTypes.put(ctx , "error");
       cout << "line "<< ctx->start->getLine() <<", while statement with no boolean conditional" << endl;
     }
+    symbolTable.exit();
+    typeTable.exit();
+    structTable.exit();
   }
 
   virtual void exitReturnStatement(decafParser::ReturnStatementContext *ctx) override {
