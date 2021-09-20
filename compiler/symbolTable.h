@@ -16,6 +16,7 @@ class SymbolTable {
 
     map<string, data> symbolTable;
     vector<string> idTable;
+
     public:
     void empty(){
         symbolTable.empty();
@@ -48,5 +49,9 @@ class SymbolTable {
 
     string getType(int pos){
         return idTable[pos];
+    }
+
+    int getSize(){
+        return idTable.size();
     }
 };

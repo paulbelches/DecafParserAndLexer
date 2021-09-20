@@ -9,10 +9,14 @@ using namespace std;
 class SymbolTableHandler {
     public:
     stack<SymbolTable> symbolTable;
+    SymbolTable paramTable;
 
     void enter(){
         SymbolTable tempSymbolTable;
         symbolTable.push(tempSymbolTable);
+        if (paramTable.getSize() != 0){
+            initializeWithParamTable();
+        }
     }
 
     void exit(){
@@ -32,7 +36,6 @@ class SymbolTableHandler {
     }
 
     void binding(string identifier, string dataType, int size){
-        //cout << "Tama;o actual: " << symbolTable.size() << endl;
         if (!symbolTable.empty()){
             symbolTable.top().binding(identifier, dataType, size);
         } else {
@@ -83,5 +86,26 @@ class SymbolTableHandler {
             tempSymbolTable.pop();
         }
         return type;
+    }
+
+    //Empty
+    void emptyParamTable() {
+        paramTable.empty();
+    }
+    
+    //Binding
+    void bindingParamTable(string identifier, string dataType, int size){ 
+        paramTable.binding(identifier, dataType, size);
+    }
+
+    // initialize the symbol table With the information of the ParamTable
+    void initializeWithParamTable(){
+        for (int i = 0; i < paramTable.getSize(); i++){
+            string identifier = paramTable.getIdentifier(i);
+            string dataType = paramTable.lookup(paramTable.getIdentifier(i)).dataType;
+            int size = paramTable.lookup(paramTable.getIdentifier(i)).size;
+            symbolTable.top().binding(identifier, dataType, size);
+            //cout << identifier << endl;
+        }
     }
 };

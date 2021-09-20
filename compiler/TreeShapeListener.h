@@ -143,6 +143,7 @@ public:
 
   virtual void exitMethodDeclaration(decafParser::MethodDeclarationContext *ctx) override {
     symbolTable.exit();
+    symbolTable.emptyParamTable();
     typeTable.exit();
     structTable.exit();
     string identifier = ctx->ID()->getText();
@@ -168,6 +169,7 @@ public:
     if (!symbolTable.top().hasElement(identifier)) {
       int size = typeTable.getSize(type);
       symbolTable.binding(identifier, type, size);
+      symbolTable.bindingParamTable(identifier, type, size);
       nodeTypes.put(ctx, type);
       /////////////MOdify
       functionTable.pushParam(nodeValues.get(ctx), type);
@@ -184,6 +186,7 @@ public:
     if (!symbolTable.top().hasElement(identifier)) {
       int size = typeTable.getSize(type);
       symbolTable.binding(identifier, type, size);
+      symbolTable.bindingParamTable(identifier, type, size);
       nodeTypes.put(ctx, type);
       /////////////MOdify
       functionTable.pushParam(nodeValues.get(ctx), type);
