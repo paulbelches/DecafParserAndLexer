@@ -88,35 +88,32 @@ public:
   virtual void enterExpressionParentesis(decafParser::ExpressionParentesisContext * /*ctx*/) override { }
   virtual void exitExpressionParentesis(decafParser::ExpressionParentesisContext * /*ctx*/) override { }
 
-  virtual void enterExpressionPair(decafParser::ExpressionPairContext * /*ctx*/) override { }
-  virtual void exitExpressionPair(decafParser::ExpressionPairContext * /*ctx*/) override { }
+  virtual void enterExpressionPairArith(decafParser::ExpressionPairArithContext * /*ctx*/) override { }
+  virtual void exitExpressionPairArith(decafParser::ExpressionPairArithContext * /*ctx*/) override { }
+
+  virtual void enterExpressionPairRel(decafParser::ExpressionPairRelContext * /*ctx*/) override { }
+  virtual void exitExpressionPairRel(decafParser::ExpressionPairRelContext * /*ctx*/) override { }
 
   virtual void enterExpressionLocation(decafParser::ExpressionLocationContext * /*ctx*/) override { }
   virtual void exitExpressionLocation(decafParser::ExpressionLocationContext * /*ctx*/) override { }
 
+  virtual void enterExpressionPairEq(decafParser::ExpressionPairEqContext * /*ctx*/) override { }
+  virtual void exitExpressionPairEq(decafParser::ExpressionPairEqContext * /*ctx*/) override { }
+
+  virtual void enterExpressionPairCond(decafParser::ExpressionPairCondContext * /*ctx*/) override { }
+  virtual void exitExpressionPairCond(decafParser::ExpressionPairCondContext * /*ctx*/) override { }
+
   virtual void enterExpressionMethodCall(decafParser::ExpressionMethodCallContext * /*ctx*/) override { }
   virtual void exitExpressionMethodCall(decafParser::ExpressionMethodCallContext * /*ctx*/) override { }
+
+  virtual void enterExpressionPairArithSimple(decafParser::ExpressionPairArithSimpleContext * /*ctx*/) override { }
+  virtual void exitExpressionPairArithSimple(decafParser::ExpressionPairArithSimpleContext * /*ctx*/) override { }
 
   virtual void enterExpressionNegativ(decafParser::ExpressionNegativContext * /*ctx*/) override { }
   virtual void exitExpressionNegativ(decafParser::ExpressionNegativContext * /*ctx*/) override { }
 
   virtual void enterArg(decafParser::ArgContext * /*ctx*/) override { }
   virtual void exitArg(decafParser::ArgContext * /*ctx*/) override { }
-
-  virtual void enterOp(decafParser::OpContext * /*ctx*/) override { }
-  virtual void exitOp(decafParser::OpContext * /*ctx*/) override { }
-
-  virtual void enterArith_op(decafParser::Arith_opContext * /*ctx*/) override { }
-  virtual void exitArith_op(decafParser::Arith_opContext * /*ctx*/) override { }
-
-  virtual void enterRel_op(decafParser::Rel_opContext * /*ctx*/) override { }
-  virtual void exitRel_op(decafParser::Rel_opContext * /*ctx*/) override { }
-
-  virtual void enterEq_op(decafParser::Eq_opContext * /*ctx*/) override { }
-  virtual void exitEq_op(decafParser::Eq_opContext * /*ctx*/) override { }
-
-  virtual void enterCond_op(decafParser::Cond_opContext * /*ctx*/) override { }
-  virtual void exitCond_op(decafParser::Cond_opContext * /*ctx*/) override { }
 
   virtual void enterLiteral(decafParser::LiteralContext * /*ctx*/) override { }
   virtual void exitLiteral(decafParser::LiteralContext * /*ctx*/) override { }

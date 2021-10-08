@@ -16,6 +16,7 @@ fragment LETTER : ('a'..'z'|'A'..'Z'|'_') ;
 
 WS :  [ \t\r\n] -> skip;
 
+COMMENTS :  '//' ~('\r' | '\n')* -> channel(HIDDEN);
 
 /*------------------------------------------------------------------
  * PARSER RULES
@@ -101,51 +102,24 @@ location
 //Array verification
 ///////////
 expression
-	: methodCall				#expressionMethodCall ///
-	| expression op expression	#expressionPair ////
-	| location					#expressionLocation ///
-	| literal					#expressionLiteral ////
-	| '-' expression			#expressionNegativ ////
-	| '!' expression			#expressionNegation ////
-	| '(' expression ')'		#expressionParentesis ////
+	: methodCall								#expressionMethodCall ///
+	| '(' expression ')'						#expressionParentesis ////
+	| expression op=('*'|'/'|'%') expression		#expressionPairArith
+	| expression op=('+'|'-') expression			#expressionPairArithSimple
+	| expression op=('<'|'>'|'<='|'>=') expression	#expressionPairRel
+	| expression op=('=='|'!=') expression			#expressionPairEq
+	| expression op=('&&'|'||') expression			#expressionPairCond
+	| location									#expressionLocation ///
+	| literal									#expressionLiteral ////
+	| '-' expression							#expressionNegativ ////
+	| '!' expression							#expressionNegation ////
 	;
 
 /*+++++++++++*/
 arg	
 	: expression
 	;
-/*+++++++++++*/  ///add vector check
-op
-	: arith_op
-	| rel_op
-	| eq_op
-	| cond_op
-	;
-/*+++++++++++*/
-arith_op
-	: '+'
-	| '-'
-	| '*'
-	| '/'
-	| '%'
-	;
-/*+++++++++++*/
-rel_op
-	: '>'
-	| '<'
-	| '>='
-	| '<='
-	;
-/*+++++++++++*/
-eq_op
-	: '=='
-	| '!='
-	;
-/*+++++++++++*/
-cond_op
-	: '&&'
-	| '||'
-	;
+
 /*+++++++++++*/
 literal
 	: int_literal

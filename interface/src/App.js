@@ -25,7 +25,8 @@ function App() {
       }
     })
     .catch(function (error) {
-      console.log(error);
+      setTitle("No Response")
+      setResult("")
     });
   }
 

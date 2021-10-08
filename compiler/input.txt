@@ -1,11 +1,21 @@
 class Program {
-	int prueba(int a){
-		if (true) {
-			int b;
+	int prueba(int x, int y){
+		if ( x < 100 || x > 200 && x!= y ) {
+			x = 0;
+		} else {
+			y = 0;
 		}
 		return 0;
 	}
 	void main() {
+		int a;
+		int b;
+		boolean c;
+		b = a + 12 
+		(a + b) * prueba(a, b);
 
 	}
 }
+
+
+

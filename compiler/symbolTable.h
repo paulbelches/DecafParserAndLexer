@@ -13,14 +13,31 @@ class SymbolTable {
         int size;
         int offset;
     };
-
+    int base;
+    int top;
     map<string, data> symbolTable;
     vector<string> idTable;
 
     public:
     void empty(){
-        symbolTable.empty();
-        idTable.empty();
+        symbolTable.clear();
+        idTable.clear();
+    }
+
+    void setBase(int initialBase){
+        base = initialBase;
+    }
+
+    int getBase(){
+        return base;
+    }
+
+    void setTop(int initialTop){
+        top = initialTop;
+    }
+
+    int getTop(){
+        return top;
     }
 
     void binding(string identifier, string dataType, int size){
@@ -28,7 +45,8 @@ class SymbolTable {
         tempData.id = idTable.size();
         tempData.size = size;
         tempData.dataType = dataType;
-        tempData.offset = (tempData.id == 0) ? 0 : symbolTable[idTable[tempData.id - 1]].offset + symbolTable[idTable[tempData.id - 1]].size ;
+        tempData.offset = (tempData.id == 0) ? base : top ;
+        top = tempData.offset + tempData.size;
         symbolTable[identifier] = tempData;
         idTable.push_back(identifier);
     }

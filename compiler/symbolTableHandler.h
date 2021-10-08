@@ -13,7 +13,11 @@ class SymbolTableHandler {
 
     void enter(){
         SymbolTable tempSymbolTable;
+        //Set Offset
+        (symbolTable.size() == 0) ? tempSymbolTable.setBase(0) : tempSymbolTable.setBase( symbolTable.top().getTop() );
+        //Push table
         symbolTable.push(tempSymbolTable);
+        //Fill with existing parameters
         if (paramTable.getSize() != 0){
             initializeWithParamTable();
         }

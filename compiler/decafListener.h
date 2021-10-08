@@ -86,35 +86,32 @@ public:
   virtual void enterExpressionParentesis(decafParser::ExpressionParentesisContext *ctx) = 0;
   virtual void exitExpressionParentesis(decafParser::ExpressionParentesisContext *ctx) = 0;
 
-  virtual void enterExpressionPair(decafParser::ExpressionPairContext *ctx) = 0;
-  virtual void exitExpressionPair(decafParser::ExpressionPairContext *ctx) = 0;
+  virtual void enterExpressionPairArith(decafParser::ExpressionPairArithContext *ctx) = 0;
+  virtual void exitExpressionPairArith(decafParser::ExpressionPairArithContext *ctx) = 0;
+
+  virtual void enterExpressionPairRel(decafParser::ExpressionPairRelContext *ctx) = 0;
+  virtual void exitExpressionPairRel(decafParser::ExpressionPairRelContext *ctx) = 0;
 
   virtual void enterExpressionLocation(decafParser::ExpressionLocationContext *ctx) = 0;
   virtual void exitExpressionLocation(decafParser::ExpressionLocationContext *ctx) = 0;
 
+  virtual void enterExpressionPairEq(decafParser::ExpressionPairEqContext *ctx) = 0;
+  virtual void exitExpressionPairEq(decafParser::ExpressionPairEqContext *ctx) = 0;
+
+  virtual void enterExpressionPairCond(decafParser::ExpressionPairCondContext *ctx) = 0;
+  virtual void exitExpressionPairCond(decafParser::ExpressionPairCondContext *ctx) = 0;
+
   virtual void enterExpressionMethodCall(decafParser::ExpressionMethodCallContext *ctx) = 0;
   virtual void exitExpressionMethodCall(decafParser::ExpressionMethodCallContext *ctx) = 0;
+
+  virtual void enterExpressionPairArithSimple(decafParser::ExpressionPairArithSimpleContext *ctx) = 0;
+  virtual void exitExpressionPairArithSimple(decafParser::ExpressionPairArithSimpleContext *ctx) = 0;
 
   virtual void enterExpressionNegativ(decafParser::ExpressionNegativContext *ctx) = 0;
   virtual void exitExpressionNegativ(decafParser::ExpressionNegativContext *ctx) = 0;
 
   virtual void enterArg(decafParser::ArgContext *ctx) = 0;
   virtual void exitArg(decafParser::ArgContext *ctx) = 0;
-
-  virtual void enterOp(decafParser::OpContext *ctx) = 0;
-  virtual void exitOp(decafParser::OpContext *ctx) = 0;
-
-  virtual void enterArith_op(decafParser::Arith_opContext *ctx) = 0;
-  virtual void exitArith_op(decafParser::Arith_opContext *ctx) = 0;
-
-  virtual void enterRel_op(decafParser::Rel_opContext *ctx) = 0;
-  virtual void exitRel_op(decafParser::Rel_opContext *ctx) = 0;
-
-  virtual void enterEq_op(decafParser::Eq_opContext *ctx) = 0;
-  virtual void exitEq_op(decafParser::Eq_opContext *ctx) = 0;
-
-  virtual void enterCond_op(decafParser::Cond_opContext *ctx) = 0;
-  virtual void exitCond_op(decafParser::Cond_opContext *ctx) = 0;
 
   virtual void enterLiteral(decafParser::LiteralContext *ctx) = 0;
   virtual void exitLiteral(decafParser::LiteralContext *ctx) = 0;

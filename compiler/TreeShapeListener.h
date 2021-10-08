@@ -6,6 +6,10 @@
 #include "./typeTableHandler.h"
 #include "./functionTable.h"
 #include "./structTableHandler.h"
+#include "./temporalsHandler.h"
+#include "./quads.h"
+#include <iostream>
+#include <string>
 
 #include "decafBaseListener.h"
 
@@ -24,12 +28,25 @@ private:
   tree::ParseTreeProperty<string> nodeTypes; //put y get
   tree::ParseTreeProperty<string> nodeValues; //put y get
 
+  TemporalsHandler labelsHandler;
+  TemporalsHandler temporalsHandler;
+  Quads quadsHandler; 
+  /* Handle control instructions */
+  stack<string> correctLabel;
+  stack<string> wrongLabel;
+
+  stack<string> beforeblock;
+  stack<string> afterblock;
+  tree::ParseTreeProperty<string> afterExpr; //put y get
+
+
 public:
 
   virtual void enterProgram(decafParser::ProgramContext *ctx) override { 
     symbolTable.enter();
     typeTable.enter();
     structTable.enter();
+    labelsHandler.reset();
     typeTable.binding("void", 0);
     typeTable.binding("int", 4);
     typeTable.binding("char", 2);
@@ -48,6 +65,9 @@ public:
       cout << "line "<< ctx->start->getLine() <<", main has unnecesary arguments. \n";
       nodeTypes.put(ctx, "error");
     } 
+    /////////// Esto tengo //////////////
+    cout << "/////////// Esto tengo //////////////" << endl;
+    cout << quadsHandler.toString() << endl;
   }
   //Check for errors
   virtual void exitVariableDeclaration(decafParser::VariableDeclarationContext *ctx) override {    
@@ -58,6 +78,9 @@ public:
       type = "struct"+ctx->varType()->structDeclaration()->ID()->getText();
     } else {
       type =  ctx->varType()->getText();
+      //////////
+      cout << "inicializar "<< identifier << endl;
+      //////////
     }
     
     if (typeTable.elementExist(type) < 0){
@@ -124,17 +147,41 @@ public:
     symbolTable.enter();
     typeTable.enter();
     structTable.enter();
+    temporalsHandler.reset();
     string type =  ctx->methodType()->getText();
     string identifier = ctx->ID()->getText();
     if (!functionTable.hasElement(identifier)){
-      int parameterCount = 0;
+      //////////
+      cout << "Function "+identifier+" :"<< endl;
+      quadsHandler.binding(
+        identifier, 
+        "function", 
+        "",
+        "",
+        ""
+      );
+      //////////
+      int parameterCounter = ctx->parameter().size() -1;
       vector<string> params;
-      while (ctx->parameter(parameterCount) != 0){
-        nodeValues.put(ctx->parameter(parameterCount), identifier);
-        parameterCount++;
+      while (parameterCounter >= 0){
+        //////////
+        /* Get temporal */
+        int resultTemp = temporalsHandler.getVariable();
+        quadsHandler.binding(
+          "t"+to_string(resultTemp), 
+          "mov", 
+          ctx->parameter(parameterCounter)->children[1]->getText(),
+          "",
+          ctx->parameter(parameterCounter)->children[1]->getText()
+        );
+        cout << "t"+to_string(resultTemp)+" load "+ctx->parameter(parameterCounter)->children[1]->getText()<< endl;
+        //////////
+        nodeValues.put(ctx->parameter(parameterCounter), identifier);
+        parameterCounter--;
       }
       functionTable.binding(identifier, type, params);
       nodeTypes.put(ctx, type);
+      
     } else {
       cout << "line "<< ctx->start->getLine() <<", method " + identifier + " already declared. \n";
       nodeTypes.put(ctx, "error");
@@ -159,6 +206,17 @@ public:
       //cout << blockReturnType << endl;
       cout << "line "<< ctx->start->getLine() <<", method " + identifier + " expected return " + methodType + " but " + blockType + " returned \n";
       nodeTypes.put(ctx, "error");
+    } else {
+      //////////
+      quadsHandler.binding(
+        identifier, 
+        "End", 
+        "",
+        "",
+        ""
+      );
+      cout << "End"+identifier<< endl;
+      //////////
     }
   }
 
@@ -196,6 +254,19 @@ public:
       nodeTypes.put(ctx, "error");
     }
   }
+  virtual void enterBlock(decafParser::BlockContext *ctx) override {
+    if (!beforeblock.empty()){
+      cout << beforeblock.top() << ":" << endl;
+      quadsHandler.binding(
+        beforeblock.top(),  
+        "label", 
+        "",
+        "",
+        ""
+      );
+      beforeblock.pop();
+    }
+  }
 
   virtual void exitBlock(decafParser::BlockContext *ctx) override {
     string type = "void";
@@ -225,6 +296,32 @@ public:
         }
       }
     }
+    if (!afterblock.empty()){
+      size_t start = afterblock.top().find(" ");
+      size_t finish = afterblock.top().find(" ", start+1, 1);
+      //cout << afterblock.top() << endl;
+      if (afterblock.top().substr(0, start) == "else"){
+        cout << "goto" << afterblock.top().substr(start, finish-start) << endl;
+        quadsHandler.binding(
+          afterblock.top().substr(start+1, finish-start),  
+          "goto", 
+          "",
+          "",
+          ""
+        );
+        start = finish;
+        finish = afterblock.top().find(" ", start+1, 1);
+      } 
+      cout << afterblock.top().substr(start, finish-start)<< ":" << endl;
+      quadsHandler.binding(
+        afterblock.top().substr(start+1, finish-start),  
+        "label", 
+        "",
+        "",
+        ""
+      );
+      afterblock.pop();
+    }
     nodeTypes.put( ctx, "void" );
   }
 
@@ -232,7 +329,27 @@ public:
     symbolTable.enter();
     typeTable.enter();
     structTable.enter();
+    //// Control /////
+    string label = "L"+to_string(labelsHandler.getVariable());
+    correctLabel.push(label);
+    beforeblock.push(label);
+    label = "L"+to_string(labelsHandler.getVariable());
+    wrongLabel.push(label);
+    afterblock.push("norm "+label);
+    label = "L"+to_string(labelsHandler.getVariable());
+    if (ctx->block()[1] != 0){
+      afterblock.top() = "else "+label+" "+afterblock.top().substr(5, afterblock.top().size())+" ";
+    }
+    /*
+    if (ctx->block()[1] != 0){
+      string temp = "goto "+ label+ "\n" + afterblock.top();
+      afterblock.top() = label+":";
+      afterblock.push(temp);
+    }
+    */
+    //////////////
   }
+
   virtual void exitIfStatement(decafParser::IfStatementContext *ctx) override { 
     string expressionType = nodeTypes.get(ctx->expression());
     string blockType = nodeTypes.get(ctx->block()[0]);
@@ -255,6 +372,8 @@ public:
       nodeTypes.put(ctx, "error");
       cout << "line "<< ctx->start->getLine() <<", if statement with no boolean conditional \n";
     }
+    correctLabel.pop();
+    wrongLabel.pop();
     symbolTable.exit();
     typeTable.exit();
     structTable.exit();
@@ -265,6 +384,7 @@ public:
     typeTable.enter();
     structTable.enter();
   }
+
   virtual void exitWhileStatement(decafParser::WhileStatementContext *ctx) override {
     string expressionType = nodeTypes.get(ctx->expression());
     string blockType = nodeTypes.get(ctx->block());
@@ -290,6 +410,18 @@ public:
       nodeTypes.put( ctx , "error");
     } else {
       nodeTypes.put( ctx, nodeTypes.get(ctx->expression()) );
+      //////////
+      /* search for expression */
+      int temp1Value =  quadsHandler.find(ctx->expression()->getText());
+      quadsHandler.binding(
+        "rr", 
+        "mov", 
+        temp1Value == 0 ? ctx->expression()->getText() : quadsHandler.getId(temp1Value),
+        "",
+        ""
+      );
+      cout << "rr load "+ctx->expression()->getText()<< endl;
+        //////////
       //nodeValues.put( ctx, "return" );
     }
   }
@@ -301,6 +433,17 @@ public:
       nodeTypes.put(ctx, "error");
     } else if (expressionType == locationType){
       nodeTypes.put( ctx, "void" );
+      //////////
+      int temp1Value =  quadsHandler.find(ctx->expression()->getText());  
+      quadsHandler.binding(
+        ctx->location()->getText(), 
+        "mov", 
+        temp1Value == 0 ? ctx->expression()->getText() : quadsHandler.getId(temp1Value),
+        "",
+        ""
+      );
+      cout << "Asign "+ctx->location()->getText()+" "+ctx->expression()->getText()<< endl;
+      //////////
     } else {
       cout << "line "<< ctx->start->getLine() <<", cannot asign " << expressionType << " to " << locationType << "\n";
       nodeTypes.put(ctx, "error");
@@ -320,8 +463,23 @@ public:
       int argCount = 0;
       vector<string> args;
       while (ctx->arg(argCount) != 0){
-        //cout << ctx->arg(argCount)->getText()<< endl; 
-        //cout << nodeTypes.get(ctx->arg(argCount))<< endl; 
+        //////////
+        /*Check if the expression is in the symbol table*/
+        int temp1Value =  quadsHandler.find(ctx->arg(argCount)->getText());
+        /*Get the temporal where the result is going to be store*/
+        //int resultTemp = temporalsHandler.getVariable(); //Check if it is necesary
+        /*Insert The Quad*/
+        quadsHandler.binding(
+          temp1Value == 0 ? ctx->arg(argCount)->getText() : quadsHandler.getId(temp1Value), 
+          "push", 
+          "",
+          "",
+          ""
+        );
+        cout << "push "
+        << ( (temp1Value == 0) ? ctx->arg(argCount)->getText() : quadsHandler.getId(temp1Value) )
+        << endl;
+        ////////// 
         args.push_back(nodeTypes.get(ctx->arg(argCount)));
         argCount++;
       }
@@ -331,6 +489,33 @@ public:
       if (equal(args.begin(), args.end(), methodParams.begin(), methodParams.end())){
         //cout << identifier << " is of type " << functionTable.getType(identifier) << endl;
         nodeTypes.put(ctx, functionTable.getType(identifier));
+        //////////
+        /*Get the temporal where the result is going to be store*/
+        int resultTemp = temporalsHandler.getVariable();
+        //Call Function
+        quadsHandler.binding(
+          identifier,  
+          "goto", 
+          "",
+          "",
+          ""
+        );
+        cout << "goto "<< identifier<< endl;
+        //Read return value
+        quadsHandler.binding(
+          "t"+to_string(resultTemp), 
+          "mov", 
+          "rr", 
+          "",
+          ctx->getText()
+        );
+        cout <<
+          "t"+to_string(resultTemp) << " " <<
+          "load"<<
+          "rr" << " " <<
+          ctx->getText() << endl;
+
+        //////////
       } else {
         //Print error message
         cout << "line "<< ctx->start->getLine() <<", expected paramters ( ";
@@ -487,11 +672,8 @@ public:
     } 
   }
 
-//////////////////////////////////////////////////////////////////////////////
-  virtual void exitExpressionPair(decafParser::ExpressionPairContext *ctx) override {
-    // Add diferente type opernads operations
-    string opType = nodeTypes.get(ctx->op());
-    string opValue = nodeValues.get(ctx->op());
+//////////////////////////////////////////////////////////////////////////////  
+  virtual void exitExpressionPairArith(decafParser::ExpressionPairArithContext *ctx) override { 
     string exp1Type = nodeTypes.get(ctx->expression()[0]);
     string exp1Value = nodeValues.get(ctx->expression()[0]);
     string exp2Type = nodeTypes.get(ctx->expression()[1]);
@@ -500,41 +682,313 @@ public:
     if ( (exp1Type == "error") || (exp2Type == "error") ) {
       nodeTypes.put(ctx, "error");
       return;
-    }
-    if (opType == "cond")  {
-      if ((exp1Type == "boolean") && (exp2Type == "boolean")){
-        nodeTypes.put(ctx, "boolean");
-        return;
-      } else {
-        nodeTypes.put(ctx, "error");
-        cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type + ".\n";
-        return;
-      }
-    } else if (opType == "eq")  {
-      if (exp1Type == exp2Type){
-        nodeTypes.put(ctx, "boolean");
-        return;
-      } else {
-        nodeTypes.put(ctx, "error");
-        cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type + ".\n";
-        return;
-      }
-    } else if (opType == "rel")  {
-      if (exp1Type == exp2Type){
-        nodeTypes.put(ctx, "boolean");
-        return;
-      } else {
-        nodeTypes.put(ctx, "error");
-        cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type + ".\n";
-        return;
-      }
-    } else if (opType == "arith")  {
+    } else {
       if (((exp1Type == exp2Type)  && (exp1Type == "int"))){
         nodeTypes.put(ctx, "int");
+        //////////
+        /*Check if the expression is in the symbol table*/
+        int temp1Value =  quadsHandler.find(ctx->expression()[0]->getText());
+        int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
+        /*Get the temporal where the result is going to be store*/
+        int resultTemp = temporalsHandler.getVariable();
+        string func; 
+        if (ctx->children[1]->getText() == "*"){
+           func = "mul";
+        } else if (ctx->children[1]->getText() == "/"){
+          func = "div";
+        } else {
+          func = "rem";
+        }
+        /*Insert The Quad*/
+        quadsHandler.binding(
+          "t"+to_string(resultTemp), 
+          func, 
+          temp1Value == 0 ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value),
+          temp2Value == 0 ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value),
+          ctx->getText()
+        );
+        cout <<
+          "t"+to_string(resultTemp) << " " <<
+          func << " " <<
+          ((temp1Value == 0) ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value)) << " " <<
+          ((temp2Value == 0) ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value)) << " " <<
+          ctx->getText() << endl;
+        //////////
         return;
       } else {
         nodeTypes.put(ctx, "error");
         cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type  + ".\n";
+        return;
+      }
+    }
+  }
+
+  virtual void exitExpressionPairArithSimple(decafParser::ExpressionPairArithSimpleContext *ctx) override { 
+    string exp1Type = nodeTypes.get(ctx->expression()[0]);
+    string exp1Value = nodeValues.get(ctx->expression()[0]);
+    string exp2Type = nodeTypes.get(ctx->expression()[1]);
+    string exp2Value = nodeValues.get(ctx->expression()[1]);
+
+    if ( (exp1Type == "error") || (exp2Type == "error") ) {
+      nodeTypes.put(ctx, "error");
+      return;
+    } else {
+      if (((exp1Type == exp2Type)  && (exp1Type == "int"))){
+        nodeTypes.put(ctx, "int");
+        //////////
+        /*Check if the expression is in the symbol table*/
+        int temp1Value =  quadsHandler.find(ctx->expression()[0]->getText());
+        int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
+        /*Get the temporal where the result is going to be store*/
+        int resultTemp = temporalsHandler.getVariable();
+        string func; 
+        if (ctx->children[1]->getText() == "+"){
+           func = "add";
+        } else {
+          func = "sub";
+        }
+        /*Insert The Quad*/
+        quadsHandler.binding(
+          "t"+to_string(resultTemp), 
+          func, 
+          temp1Value == 0 ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value),
+          temp2Value == 0 ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value),
+          ctx->getText()
+        );
+        cout <<
+          "t"+to_string(resultTemp) << " " <<
+          func << " " <<
+          ((temp1Value == 0) ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value)) << " " <<
+          ((temp2Value == 0) ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value)) << " " <<
+          ctx->getText() << endl;
+        //////////
+        return;
+      } else {
+        nodeTypes.put(ctx, "error");
+        cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type  + ".\n";
+        return;
+      }
+    }
+  }
+  
+  virtual void exitExpressionPairRel(decafParser::ExpressionPairRelContext *ctx) override {
+    string exp1Type = nodeTypes.get(ctx->expression()[0]);
+    string exp1Value = nodeValues.get(ctx->expression()[0]);
+    string exp2Type = nodeTypes.get(ctx->expression()[1]);
+    string exp2Value = nodeValues.get(ctx->expression()[1]);
+
+    if ( (exp1Type == "error") || (exp2Type == "error") ) {
+      nodeTypes.put(ctx, "error");
+      return;
+    } else {
+      if (exp1Type == exp2Type){
+        nodeTypes.put(ctx, "boolean");
+        /*Check if the expression is in the symbol table*/
+        int temp1Value =  quadsHandler.find(ctx->expression()[0]->getText());
+        int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
+        /*Get the temporal where the result is going to be store*/
+        // int resultTemp = temporalsHandler.getVariable();
+        string func; 
+        if (ctx->children[1]->getText() == "<"){
+           func = "lt";
+        } else if (ctx->children[1]->getText() == ">"){
+          func = "gt";
+        } else if (ctx->children[1]->getText() == "<="){
+          func = "le";
+        } else {
+          func = "ge";
+        }
+        /*Insert The Quad*/
+        quadsHandler.binding(
+          correctLabel.top(), // add later
+          func, 
+          temp1Value == 0 ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value),
+          temp2Value == 0 ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value),
+          ""//ctx->getText()
+        );
+        quadsHandler.binding(
+          wrongLabel.top(), // add later
+          "goto", 
+          "",
+          "",
+          ""//ctx->getText()
+        );
+        cout <<
+          func << " " <<
+          ((temp1Value == 0) ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value)) << " " <<
+          ((temp2Value == 0) ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value)) << " " <<
+          correctLabel.top()<< " " <<
+          ctx->getText() << endl;
+        cout <<
+          "goto " <<
+          wrongLabel.top()<< " " <<
+          ctx->getText() << endl;
+                //////////
+        /* Check for after writng */                        
+        string parentValue = afterExpr.get(ctx->parent);
+        if (parentValue.size() > 0 ){
+          afterExpr.put(ctx->parent, "");
+          quadsHandler.binding(
+            parentValue,  
+            "label", 
+            "",
+            "",
+            ""
+          );
+          cout << parentValue << ":" << endl;
+          if (ctx->parent->children[1]->getText() == "&&"){
+            correctLabel.pop();
+          } else {
+            wrongLabel.pop();
+          }
+        }
+        /*                        */
+        //////////
+        return;
+      } else {
+        nodeTypes.put(ctx, "error");
+        cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type + ".\n";
+        return;
+      }
+    }
+  }
+  
+  virtual void exitExpressionPairEq(decafParser::ExpressionPairEqContext *ctx) override {
+    string exp1Type = nodeTypes.get(ctx->expression()[0]);
+    string exp1Value = nodeValues.get(ctx->expression()[0]);
+    string exp2Type = nodeTypes.get(ctx->expression()[1]);
+    string exp2Value = nodeValues.get(ctx->expression()[1]);
+
+    if ( (exp1Type == "error") || (exp2Type == "error") ) {
+      nodeTypes.put(ctx, "error");
+      return;
+    } else {
+      if (exp1Type == exp2Type){
+        nodeTypes.put(ctx, "boolean");
+        //////////
+        /*Check if the expression is in the symbol table*/
+        int temp1Value =  quadsHandler.find(ctx->expression()[0]->getText());
+        int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
+        /*Get the temporal where the result is going to be store*/
+        int resultTemp = temporalsHandler.getVariable();
+        string func; 
+        if (ctx->children[1]->getText() == "=="){
+          func = "eq";
+        } else {
+          func = "ne";
+        }
+        /*Insert The Quad*/
+        quadsHandler.binding(
+          correctLabel.top(), // add later
+          func, 
+          temp1Value == 0 ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value),
+          temp2Value == 0 ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value),
+          ""//ctx->getText()
+        );
+        quadsHandler.binding(
+          wrongLabel.top(), // add later
+          "goto", 
+          "",
+          "",
+          ""//ctx->getText()
+        );
+
+        cout <<
+          func << " " <<
+          ((temp1Value == 0) ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value)) << " " <<
+          ((temp2Value == 0) ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value)) << " " <<
+          correctLabel.top()<< " " <<
+          ctx->getText() << endl;
+        cout <<
+          "goto " <<
+          wrongLabel.top()<< " " <<
+          ctx->getText() << endl;
+
+        /* Check for after writng */                        
+        string parentValue = afterExpr.get(ctx->parent);
+        if (parentValue.size() > 0 ){
+          afterExpr.put(ctx->parent, "");
+          quadsHandler.binding(
+            parentValue,  
+            "label", 
+            "",
+            "",
+            ""
+          );
+          cout << parentValue << ":" << endl;
+          if (ctx->parent->children[1]->getText() == "&&"){
+            correctLabel.pop();
+          } else {
+            wrongLabel.pop();
+          }
+        }
+        /*                        */
+        //////////
+        return;
+      } else {
+        nodeTypes.put(ctx, "error");
+        cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type + ".\n";
+        return;
+      }
+    }
+  }
+  virtual void enterExpressionPairCond(decafParser::ExpressionPairCondContext *ctx) override {
+    //////////
+    string func; 
+    string label = "L"+to_string(labelsHandler.getVariable());
+    if (ctx->children[1]->getText() == "&&"){
+      correctLabel.push(label);
+    } else {
+      wrongLabel.push(label);
+    }
+    afterExpr.put(ctx, label);
+    //cout << "guarde " << afterExpr.get(ctx) << endl;
+  }
+  
+  virtual void exitExpressionPairCond(decafParser::ExpressionPairCondContext *ctx) override {
+    string exp1Type = nodeTypes.get(ctx->expression()[0]);
+    string exp1Value = nodeValues.get(ctx->expression()[0]);
+    string exp2Type = nodeTypes.get(ctx->expression()[1]);
+    string exp2Value = nodeValues.get(ctx->expression()[1]);
+
+    if ( (exp1Type == "error") || (exp2Type == "error") ) {
+      nodeTypes.put(ctx, "error");
+      return;
+    } else {
+      if ((exp1Type == "boolean") && (exp2Type == "boolean")){
+        nodeTypes.put(ctx, "boolean");
+        //////////
+        /* Check for after writng */                        
+        string parentValue = afterExpr.get(ctx->parent);
+        if (parentValue.size() > 0 ){
+          afterExpr.put(ctx->parent, "");
+          quadsHandler.binding(
+            parentValue,  
+            "label", 
+            "",
+            "",
+            ""
+          );
+          cout << parentValue << ":" << endl;
+          if (ctx->parent->children[1]->getText() == "&&"){
+            correctLabel.pop();
+          } else {
+            wrongLabel.pop();
+          }
+        }
+        /*                        */
+        ///////////// 
+        /*                   
+        if (ctx->children[1]->getText() == "&&"){
+          correctLabel.pop();
+        } else {
+          wrongLabel.pop();
+        }*/
+        ////////
+        return;
+      } else {
+        nodeTypes.put(ctx, "error");
+        cout << "line "<< ctx->start->getLine() <<", incompatible types " << exp1Type << " and " << exp2Type + ".\n";
         return;
       }
     }
@@ -561,6 +1015,26 @@ public:
     }else if (nodeTypes.get(ctx->expression()) == "int") {
       nodeTypes.put( ctx, nodeTypes.get(ctx->expression()) );
       nodeValues.put( ctx, nodeValues.get(ctx->expression()) ); // update to real, negativ value?
+      //////////
+      /*Check if the expression is in the symbol table*/
+      int temp1Value =  quadsHandler.find(ctx->expression()->getText());
+      /*Get the temporal where the result is going to be store*/
+      int resultTemp = temporalsHandler.getVariable();
+      /*Insert The Quad*/
+      quadsHandler.binding(
+        "t"+to_string(resultTemp), 
+        "neg", 
+        temp1Value == 0 ? ctx->expression()->getText() : quadsHandler.getId(temp1Value),
+        "",
+        ctx->getText()
+      );
+      cout <<
+        "t"+to_string(resultTemp) << " " <<
+        "neg" << " " <<
+        ((temp1Value == 0) ? ctx->expression()->getText() : quadsHandler.getId(temp1Value)) << " " <<
+        "" << " " <<
+        ctx->getText() << endl;
+      //////////
     } else {
       nodeTypes.put( ctx, "error" );
       cout << "line "<< ctx->start->getLine() <<", incompatible type " + nodeTypes.get(ctx->expression()) + " and operator \"-\"." + ".\n";
@@ -573,6 +1047,26 @@ public:
     } else if (nodeTypes.get(ctx->expression()) == "boolean") {
       nodeTypes.put( ctx, nodeTypes.get(ctx->expression()) );
       nodeValues.put( ctx, nodeValues.get(ctx->expression()) );
+      //////////
+      /*Check if the expression is in the symbol table*/
+      int temp1Value =  quadsHandler.find(ctx->expression()->getText());
+      /*Get the temporal where the result is going to be store*/
+      int resultTemp = temporalsHandler.getVariable();
+      /*Insert The Quad*/
+      quadsHandler.binding(
+        "t"+to_string(resultTemp), 
+        "not", 
+        temp1Value == 0 ? ctx->expression()->getText() : quadsHandler.getId(temp1Value),
+        "",
+        ctx->getText()
+      );
+      cout <<
+        "t"+to_string(resultTemp) << " " <<
+        "not" << " " <<
+        ((temp1Value == 0) ? ctx->expression()->getText() : quadsHandler.getId(temp1Value)) << " " <<
+        "" << " " <<
+        ctx->getText() << endl;
+      //////////
     } else {
       nodeTypes.put( ctx, "error" );
       cout << "line "<< ctx->start->getLine() <<" incompatible type " + nodeTypes.get(ctx->expression()) + " and operator \"!\"." + ".\n";
@@ -586,28 +1080,34 @@ public:
     } else {
       nodeTypes.put( ctx, nodeTypes.get(ctx->expression()) );
       nodeValues.put( ctx, nodeValues.get(ctx->expression()) );
+      //////////
+      /*Check if the expression is in the symbol table*/
+      int temp1Value =  quadsHandler.find(ctx->expression()->getText());
+      if (temp1Value != 0) {
+      /*Get the temporal where the result is going to be store*/
+      int resultTemp = temporalsHandler.getVariable();
+      /*Insert The Quad*/
+      quadsHandler.binding(
+        "t"+to_string(resultTemp), 
+        "mov", 
+        quadsHandler.getId(temp1Value),
+        "",
+        ctx->getText()
+      );
+      cout <<
+        "t"+to_string(resultTemp) << " " <<
+        "mov" << " " <<
+        quadsHandler.getId(temp1Value) << " " <<
+        "" << " " <<
+        ctx->getText() << endl;
+      //////////
+      }
     }
   }
 
   virtual void exitArg(decafParser::ArgContext *ctx) override {
     nodeTypes.put( ctx, nodeTypes.get(ctx->expression()) );
     nodeValues.put( ctx, nodeValues.get(ctx->expression()) );
-  }
-
-  virtual void exitOp(decafParser::OpContext *ctx) override {
-    if (ctx->arith_op() != 0){
-      nodeTypes.put(ctx, "arith");
-      nodeValues.put(ctx, ctx->arith_op()->getText());
-    } else if (ctx->rel_op() != 0){
-      nodeTypes.put(ctx, "rel");
-      nodeValues.put(ctx, ctx->rel_op()->getText());
-    } else if (ctx->eq_op() != 0){
-      nodeTypes.put(ctx, "eq");
-      nodeValues.put(ctx, ctx->eq_op()->getText());
-    } else if (ctx->cond_op() != 0){
-      nodeTypes.put(ctx, "cond");
-      nodeValues.put(ctx, ctx->cond_op()->getText());
-    }
   }
 
   virtual void exitLiteral(decafParser::LiteralContext * ctx) override {
