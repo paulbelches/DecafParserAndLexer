@@ -1,9 +1,7 @@
 class Program {
 	int prueba(int x, int y){
-		if ( x < 100 || x > 200 && x!= y ) {
+		while(x < y){
 			x = 0;
-		} else {
-			y = 0;
 		}
 		return 0;
 	}
@@ -16,6 +14,3 @@ class Program {
 
 	}
 }
-
-
-

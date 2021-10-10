@@ -338,7 +338,9 @@ public:
     afterblock.push("norm "+label);
     label = "L"+to_string(labelsHandler.getVariable());
     if (ctx->block()[1] != 0){
-      afterblock.top() = "else "+label+" "+afterblock.top().substr(5, afterblock.top().size())+" ";
+      string tempString = "else "+label+" "+afterblock.top().substr(5, afterblock.top().size())+" ";
+      afterblock.top() = "norm "+label;
+      afterblock.push(tempString);
     }
     /*
     if (ctx->block()[1] != 0){
@@ -383,6 +385,22 @@ public:
     symbolTable.enter();
     typeTable.enter();
     structTable.enter();
+
+    string initialLabel = "L"+to_string(labelsHandler.getVariable());
+    quadsHandler.binding(
+      initialLabel,  
+      "label", 
+      "",
+      "",
+      ""
+    );
+    string label = "L"+to_string(labelsHandler.getVariable());
+    correctLabel.push(label);
+    beforeblock.push(label);
+    label = "L"+to_string(labelsHandler.getVariable());
+    wrongLabel.push(label);
+    afterblock.push("norm "+label);
+    afterblock.top() = "else "+initialLabel+" "+afterblock.top().substr(5, afterblock.top().size() - 5)+" ";
   }
 
   virtual void exitWhileStatement(decafParser::WhileStatementContext *ctx) override {
@@ -397,6 +415,8 @@ public:
       nodeTypes.put(ctx , "error");
       cout << "line "<< ctx->start->getLine() <<", while statement with no boolean conditional \n";
     }
+    correctLabel.pop();
+    wrongLabel.pop();
     symbolTable.exit();
     typeTable.exit();
     structTable.exit();
@@ -826,7 +846,12 @@ public:
                 //////////
         /* Check for after writng */                        
         string parentValue = afterExpr.get(ctx->parent);
-        if (parentValue.size() > 0 ){
+        if (parentValue == "switch") {
+          cout << "Switch back " << endl;
+          string label = wrongLabel.top();
+          wrongLabel.top() = correctLabel.top();
+          correctLabel.top() = label;
+        } else if (parentValue.size() > 0 ){
           afterExpr.put(ctx->parent, "");
           quadsHandler.binding(
             parentValue,  
@@ -906,7 +931,12 @@ public:
 
         /* Check for after writng */                        
         string parentValue = afterExpr.get(ctx->parent);
-        if (parentValue.size() > 0 ){
+        if (parentValue == "switch") {
+          cout << "Switch back " << endl;
+          string label = wrongLabel.top();
+          wrongLabel.top() = correctLabel.top();
+          correctLabel.top() = label;
+        } else if (parentValue.size() > 0 ){
           afterExpr.put(ctx->parent, "");
           quadsHandler.binding(
             parentValue,  
@@ -960,7 +990,12 @@ public:
         //////////
         /* Check for after writng */                        
         string parentValue = afterExpr.get(ctx->parent);
-        if (parentValue.size() > 0 ){
+        if (parentValue == "switch") {
+          cout << "Switch back " << endl;
+          string label = wrongLabel.top();
+          wrongLabel.top() = correctLabel.top();
+          correctLabel.top() = label;
+        } else if (parentValue.size() > 0 ){
           afterExpr.put(ctx->parent, "");
           quadsHandler.binding(
             parentValue,  
@@ -976,15 +1011,6 @@ public:
             wrongLabel.pop();
           }
         }
-        /*                        */
-        ///////////// 
-        /*                   
-        if (ctx->children[1]->getText() == "&&"){
-          correctLabel.pop();
-        } else {
-          wrongLabel.pop();
-        }*/
-        ////////
         return;
       } else {
         nodeTypes.put(ctx, "error");
@@ -1041,32 +1067,45 @@ public:
     }
   }
 
+  virtual void enterExpressionNegation(decafParser::ExpressionNegationContext *ctx) override {
+    //////////
+    string label = wrongLabel.top();
+    wrongLabel.top() = correctLabel.top();
+    correctLabel.top() = label;
+    afterExpr.put(ctx, "switch");
+    //////////
+  }
+
   virtual void exitExpressionNegation(decafParser::ExpressionNegationContext *ctx) override {
     if (nodeTypes.get(ctx->expression()) == "error") {
       nodeTypes.put( ctx, "error" );
     } else if (nodeTypes.get(ctx->expression()) == "boolean") {
       nodeTypes.put( ctx, nodeTypes.get(ctx->expression()) );
       nodeValues.put( ctx, nodeValues.get(ctx->expression()) );
-      //////////
-      /*Check if the expression is in the symbol table*/
-      int temp1Value =  quadsHandler.find(ctx->expression()->getText());
-      /*Get the temporal where the result is going to be store*/
-      int resultTemp = temporalsHandler.getVariable();
-      /*Insert The Quad*/
-      quadsHandler.binding(
-        "t"+to_string(resultTemp), 
-        "not", 
-        temp1Value == 0 ? ctx->expression()->getText() : quadsHandler.getId(temp1Value),
-        "",
-        ctx->getText()
-      );
-      cout <<
-        "t"+to_string(resultTemp) << " " <<
-        "not" << " " <<
-        ((temp1Value == 0) ? ctx->expression()->getText() : quadsHandler.getId(temp1Value)) << " " <<
-        "" << " " <<
-        ctx->getText() << endl;
-      //////////
+      /* Check for after writng */                        
+      string parentValue = afterExpr.get(ctx->parent);
+      if (parentValue == "switch") {
+        cout << "Switch back " << endl;
+        string label = wrongLabel.top();
+        wrongLabel.top() = correctLabel.top();
+        correctLabel.top() = label;
+      } else if (parentValue.size() > 0 ){
+        afterExpr.put(ctx->parent, "");
+        quadsHandler.binding(
+          parentValue,  
+          "label", 
+          "",
+          "",
+          ""
+        );
+        cout << parentValue << ":" << endl;
+        if (ctx->parent->children[1]->getText() == "&&"){
+          correctLabel.pop();
+        } else {
+          wrongLabel.pop();
+        }
+      }
+      /*                        */
     } else {
       nodeTypes.put( ctx, "error" );
       cout << "line "<< ctx->start->getLine() <<" incompatible type " + nodeTypes.get(ctx->expression()) + " and operator \"!\"." + ".\n";
@@ -1084,24 +1123,48 @@ public:
       /*Check if the expression is in the symbol table*/
       int temp1Value =  quadsHandler.find(ctx->expression()->getText());
       if (temp1Value != 0) {
-      /*Get the temporal where the result is going to be store*/
-      int resultTemp = temporalsHandler.getVariable();
-      /*Insert The Quad*/
-      quadsHandler.binding(
-        "t"+to_string(resultTemp), 
-        "mov", 
-        quadsHandler.getId(temp1Value),
-        "",
-        ctx->getText()
-      );
-      cout <<
-        "t"+to_string(resultTemp) << " " <<
-        "mov" << " " <<
-        quadsHandler.getId(temp1Value) << " " <<
-        "" << " " <<
-        ctx->getText() << endl;
-      //////////
+        /*Get the temporal where the result is going to be store*/
+        int resultTemp = temporalsHandler.getVariable();
+        /*Insert The Quad*/
+        quadsHandler.binding(
+          "t"+to_string(resultTemp), 
+          "mov", 
+          quadsHandler.getId(temp1Value),
+          "",
+          ctx->getText()
+        );
+        cout <<
+          "t"+to_string(resultTemp) << " " <<
+          "mov" << " " <<
+          quadsHandler.getId(temp1Value) << " " <<
+          "" << " " <<
+          ctx->getText() << endl;
+        //////////
       }
+      /* Check for after writng */                        
+      string parentValue = afterExpr.get(ctx->parent);
+      if (parentValue == "switch") {
+        cout << "Switch back " << endl;
+        string label = wrongLabel.top();
+        wrongLabel.top() = correctLabel.top();
+        correctLabel.top() = label;
+      } else if (parentValue.size() > 0 ){
+        afterExpr.put(ctx->parent, "");
+        quadsHandler.binding(
+          parentValue,  
+          "label", 
+          "",
+          "",
+          ""
+        );
+        cout << parentValue << ":" << endl;
+        if (ctx->parent->children[1]->getText() == "&&"){
+          correctLabel.pop();
+        } else {
+          wrongLabel.pop();
+        }
+      }
+      /*                        */
     }
   }
 
@@ -1120,6 +1183,47 @@ public:
     }else if (ctx->bool_literal() != 0){
       nodeTypes.put(ctx, "boolean");
       nodeValues.put(ctx, ctx->bool_literal()->getText());
+      if (ctx->bool_literal()->getText() == "true") {
+        quadsHandler.binding(
+          correctLabel.top(),  
+          "goto", 
+          "",
+          "",
+          ""
+        );
+      } else {
+        quadsHandler.binding(
+          wrongLabel.top(),  
+          "goto", 
+          "",
+          "",
+          ""
+        );
+      }
+      /* Check for after writng */                        
+      string parentValue = afterExpr.get(ctx->parent);
+      if (parentValue == "switch") {
+        cout << "Switch back " << endl;
+        string label = wrongLabel.top();
+        wrongLabel.top() = correctLabel.top();
+        correctLabel.top() = label;
+      } else if (parentValue.size() > 0 ){
+        afterExpr.put(ctx->parent, "");
+        quadsHandler.binding(
+          parentValue,  
+          "label", 
+          "",
+          "",
+          ""
+        );
+        cout << parentValue << ":" << endl;
+        if (ctx->parent->children[1]->getText() == "&&"){
+          correctLabel.pop();
+        } else {
+          wrongLabel.pop();
+        }
+      }
+      /*                        */
     }
   }
 }; 
