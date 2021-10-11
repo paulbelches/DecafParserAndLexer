@@ -440,7 +440,8 @@ public:
       /**/
       if (temp1Value == 0){
         if (offsets.get(ctx->expression()) != 0){
-          arg1 = "Loc["+to_string(offsets.get(ctx->expression())-1)+"]";
+          string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
+          arg1 = loc+to_string(offsets.get(ctx->expression())-1)+"]";
         } else {
           arg1 = ctx->expression()->getText();
         }
@@ -476,7 +477,8 @@ public:
         /**/
         if (temp1Value == 0){
           if (offsets.get(ctx->expression()) != 0){
-            arg1 = "Loc["+to_string(offsets.get(ctx->expression())-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
+            arg1 = loc+to_string(offsets.get(ctx->expression())-1)+"]";
           } else {
             arg1 = ctx->expression()->getText();
           }
@@ -486,7 +488,8 @@ public:
         /**/
         if (temp2Value == 0){
           if (offsets.get(ctx->location()) != 0){
-            arg2 = "Loc["+to_string(offsets.get(ctx->location())-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->location()->getText())) ? "g[" : "l[";
+            arg2 = loc+to_string(offsets.get(ctx->location())-1)+"]";
           } else {
             arg2 = ctx->location()->getText();
           }
@@ -530,7 +533,8 @@ public:
         /**/
         if (temp1Value == 0){
           if (offsets.get(ctx->arg(argCount)->expression()) != 0){
-            arg1 = "Loc["+to_string(offsets.get(ctx->arg(argCount)->expression())-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->arg(argCount)->expression()->getText())) ? "g[" : "l[";
+            arg1 = loc+to_string(offsets.get(ctx->arg(argCount)->expression())-1)+"]";
           } else {
             arg1 = ctx->arg(argCount)->getText();
           }
@@ -769,7 +773,8 @@ public:
         /**/
         if (temp1Value == 0){
           if (offsets.get(ctx->expression()[0]) != 0){
-            arg1 = "Loc["+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->expression()[0]->getText())) ? "g[" : "l[";
+            arg1 = loc+to_string(offsets.get(ctx->expression()[0])-1)+"]";
           } else {
             arg1 = ctx->expression()[0]->getText();
           }
@@ -777,14 +782,15 @@ public:
           arg1 = quadsHandler.getId(temp1Value);
         }
         /**/
-        if (temp1Value == 0){
+        if (temp2Value == 0){
           if (offsets.get(ctx->expression()[1]) != 0){
-            arg2 = "Loc["+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->expression()[1]->getText())) ? "g[" : "l[";
+            arg2 = loc+to_string(offsets.get(ctx->expression()[1])-1)+"]";
           } else {
             arg2 = ctx->expression()[1]->getText();
           }
         } else {
-          arg2 = quadsHandler.getId(temp1Value);
+          arg2 = quadsHandler.getId(temp2Value);
         }
         /*Get the temporal where the result is going to be store*/
         int resultTemp = temporalsHandler.getVariable();
@@ -841,7 +847,8 @@ public:
         /**/
         if (temp1Value == 0){
           if (offsets.get(ctx->expression()[0]) != 0){
-            arg1 = "Loc["+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->expression()[0]->getText())) ? "g[" : "l[";
+            arg1 = loc+to_string(offsets.get(ctx->expression()[0])-1)+"]";
           } else {
             arg1 = ctx->expression()[0]->getText();
           }
@@ -849,14 +856,15 @@ public:
           arg1 = quadsHandler.getId(temp1Value);
         }
         /**/
-        if (temp1Value == 0){
+        if (temp2Value == 0){
           if (offsets.get(ctx->expression()[1]) != 0){
-            arg2 = "Loc["+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->expression()[1]->getText())) ? "g[" : "l[";
+            arg2 = loc+to_string(offsets.get(ctx->expression()[1])-1)+"]";
           } else {
             arg2 = ctx->expression()[1]->getText();
           }
         } else {
-          arg2 = quadsHandler.getId(temp1Value);
+          arg2 = quadsHandler.getId(temp2Value);
         }
         /*Get the temporal where the result is going to be store*/
         int resultTemp = temporalsHandler.getVariable();
@@ -910,7 +918,8 @@ public:
         /**/
         if (temp1Value == 0){
           if (offsets.get(ctx->expression()[0]) != 0){
-            arg1 = "Loc["+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->expression()[0]->getText())) ? "g[" : "l[";
+            arg1 = loc+to_string(offsets.get(ctx->expression()[0])-1)+"]";
           } else {
             arg1 = ctx->expression()[0]->getText();
           }
@@ -918,14 +927,15 @@ public:
           arg1 = quadsHandler.getId(temp1Value);
         }
         /**/
-        if (temp1Value == 0){
+        if (temp2Value == 0){
           if (offsets.get(ctx->expression()[1]) != 0){
-            arg2 = "Loc["+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->expression()[1]->getText())) ? "g[" : "l[";
+            arg2 = loc+to_string(offsets.get(ctx->expression()[1])-1)+"]";
           } else {
             arg2 = ctx->expression()[1]->getText();
           }
         } else {
-          arg2 = quadsHandler.getId(temp1Value);
+          arg2 = quadsHandler.getId(temp2Value);
         }
         /*Get the temporal where the result is going to be store*/
         // int resultTemp = temporalsHandler.getVariable();
@@ -1020,7 +1030,8 @@ public:
         /**/
         if (temp1Value == 0){
           if (offsets.get(ctx->expression()[0]) != 0){
-            arg1 = "Loc["+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->expression()[0]->getText())) ? "g[" : "l[";
+            arg1 = loc+to_string(offsets.get(ctx->expression()[0])-1)+"]";
           } else {
             arg1 = ctx->expression()[0]->getText();
           }
@@ -1030,7 +1041,8 @@ public:
         /**/
         if (temp2Value == 0){
           if (offsets.get(ctx->expression()[1]) != 0){
-            arg2 = "Loc["+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->expression()[1]->getText())) ? "g[" : "l[";
+            arg2 = loc+to_string(offsets.get(ctx->expression()[1])-1)+"]";
           } else {
             arg2 = ctx->expression()[1]->getText();
           }
@@ -1191,7 +1203,8 @@ public:
         /**/
         if (temp1Value == 0){
           if (offsets.get(ctx->expression()) != 0){
-            arg1 = "Loc["+to_string(offsets.get(ctx->expression())-1)+"]";
+            string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
+            arg1 = loc+to_string(offsets.get(ctx->expression())-1)+"]";
           } else {
             arg1 = ctx->expression()->getText();
           }

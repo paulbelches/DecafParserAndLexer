@@ -14,7 +14,7 @@ class SymbolTableHandler {
     void enter(){
         SymbolTable tempSymbolTable;
         //Set Offset
-        (symbolTable.size() == 0) ? tempSymbolTable.setBase(0) : tempSymbolTable.setBase( symbolTable.top().getTop() );
+        (symbolTable.size() <= 1) ? tempSymbolTable.setBase(0) : tempSymbolTable.setBase( symbolTable.top().getTop() );
         tempSymbolTable.setTop(tempSymbolTable.getBase());
         //Push table
         symbolTable.push(tempSymbolTable);
@@ -95,6 +95,29 @@ class SymbolTableHandler {
             tempSymbolTable.pop();
         }
         return offset;
+    }
+
+    //Para llamadas y referencias, no declaraciones
+    bool isGlobal(string identifier){
+        bool isGlobal = false;
+        int length = symbolTable.size();
+        stack<SymbolTable> tempSymbolTable;
+        for (int i = 0; i < length; i++){
+            //Check if the identifier exist
+            if (symbolTable.top().hasElement(identifier)) {
+                //check if it is a param
+                isGlobal = i == length - 1;
+                break;
+            }
+            tempSymbolTable.push(symbolTable.top());
+            symbolTable.pop();
+        }
+        length = tempSymbolTable.size();
+        for (int i = 0; i < length; i++){
+            symbolTable.push(tempSymbolTable.top());
+            tempSymbolTable.pop();
+        }
+        return isGlobal;
     }
 
     //Para llamadas y referencias, no declaraciones
