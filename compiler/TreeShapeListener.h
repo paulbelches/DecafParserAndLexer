@@ -34,10 +34,10 @@ private:
   /* Handle control instructions */
   stack<string> correctLabel;
   stack<string> wrongLabel;
-
   stack<string> beforeblock;
   stack<string> afterblock;
   tree::ParseTreeProperty<string> afterExpr; //put y get
+  tree::ParseTreeProperty<int> offsets; //put y get
 
 
 public:
@@ -47,6 +47,7 @@ public:
     typeTable.enter();
     structTable.enter();
     labelsHandler.reset();
+    quadsHandler.enter();
     typeTable.binding("void", 0);
     typeTable.binding("int", 4);
     typeTable.binding("char", 2);
@@ -144,9 +145,10 @@ public:
   }
 
   virtual void enterMethodDeclaration(decafParser::MethodDeclarationContext *ctx) override {
-    symbolTable.enter();
     typeTable.enter();
     structTable.enter();
+    symbolTable.enter();
+    quadsHandler.enter();
     temporalsHandler.reset();
     string type =  ctx->methodType()->getText();
     string identifier = ctx->ID()->getText();
@@ -169,7 +171,7 @@ public:
         int resultTemp = temporalsHandler.getVariable();
         quadsHandler.binding(
           "t"+to_string(resultTemp), 
-          "mov", 
+          "pop", 
           ctx->parameter(parameterCounter)->children[1]->getText(),
           "",
           ctx->parameter(parameterCounter)->children[1]->getText()
@@ -193,6 +195,7 @@ public:
     symbolTable.emptyParamTable();
     typeTable.exit();
     structTable.exit();
+    quadsHandler.exit();
     string identifier = ctx->ID()->getText();
     string blockType = nodeTypes.get(ctx->block());
     //string blockReturnType = nodeValues.get(ctx->block());
@@ -432,15 +435,26 @@ public:
       nodeTypes.put( ctx, nodeTypes.get(ctx->expression()) );
       //////////
       /* search for expression */
+      string arg1;
       int temp1Value =  quadsHandler.find(ctx->expression()->getText());
+      /**/
+      if (temp1Value == 0){
+        if (offsets.get(ctx->expression()) != 0){
+          arg1 = "Loc["+to_string(offsets.get(ctx->expression())-1)+"]";
+        } else {
+          arg1 = ctx->expression()->getText();
+        }
+      } else {
+        arg1 = quadsHandler.getId(temp1Value);
+      }
       quadsHandler.binding(
         "rr", 
         "mov", 
-        temp1Value == 0 ? ctx->expression()->getText() : quadsHandler.getId(temp1Value),
+        arg1,
         "",
         ""
       );
-      cout << "rr load "+ctx->expression()->getText()<< endl;
+      cout << "rr load "+arg1<< endl;
         //////////
       //nodeValues.put( ctx, "return" );
     }
@@ -454,11 +468,36 @@ public:
     } else if (expressionType == locationType){
       nodeTypes.put( ctx, "void" );
       //////////
+      /*Check if the expression is in the symbol table*/
+      string arg1;
+      string arg2;
       int temp1Value =  quadsHandler.find(ctx->expression()->getText());  
+      int temp2Value =  quadsHandler.find(ctx->location()->getText()); 
+        /**/
+        if (temp1Value == 0){
+          if (offsets.get(ctx->expression()) != 0){
+            arg1 = "Loc["+to_string(offsets.get(ctx->expression())-1)+"]";
+          } else {
+            arg1 = ctx->expression()->getText();
+          }
+        } else {
+          arg1 = quadsHandler.getId(temp1Value);
+        }
+        /**/
+        if (temp2Value == 0){
+          if (offsets.get(ctx->location()) != 0){
+            arg2 = "Loc["+to_string(offsets.get(ctx->location())-1)+"]";
+          } else {
+            arg2 = ctx->location()->getText();
+          }
+        } else {
+          arg2 = quadsHandler.getId(temp2Value);
+        } 
+      ////
       quadsHandler.binding(
-        ctx->location()->getText(), 
+        arg2,
         "mov", 
-        temp1Value == 0 ? ctx->expression()->getText() : quadsHandler.getId(temp1Value),
+        arg1,
         "",
         ""
       );
@@ -486,11 +525,23 @@ public:
         //////////
         /*Check if the expression is in the symbol table*/
         int temp1Value =  quadsHandler.find(ctx->arg(argCount)->getText());
+        cout << "Prueba " << offsets.get(ctx->arg(argCount)->expression());
+        string arg1;
+        /**/
+        if (temp1Value == 0){
+          if (offsets.get(ctx->arg(argCount)->expression()) != 0){
+            arg1 = "Loc["+to_string(offsets.get(ctx->arg(argCount)->expression())-1)+"]";
+          } else {
+            arg1 = ctx->arg(argCount)->getText();
+          }
+        } else {
+          arg1 = quadsHandler.getId(temp1Value);
+        }
         /*Get the temporal where the result is going to be store*/
         //int resultTemp = temporalsHandler.getVariable(); //Check if it is necesary
         /*Insert The Quad*/
         quadsHandler.binding(
-          temp1Value == 0 ? ctx->arg(argCount)->getText() : quadsHandler.getId(temp1Value), 
+          arg1, 
           "push", 
           "",
           "",
@@ -592,6 +643,8 @@ public:
       //Check it exist on the symbol table
       if (symbolTable.elementExist(identifier) != -1){
         //Get type from symbol table
+        cout << identifier << " mi offset es " << symbolTable.getOffset(identifier) << endl;
+        offsets.put(ctx, symbolTable.getOffset(identifier) + 1 ); //Use to check if the offset is a result
         string type = symbolTable.getType(identifier);
         nodeTypes.put( ctx, type );
       } else {
@@ -605,7 +658,9 @@ public:
     if (nodeValues.get(ctx) == "son" ){
       string type = nodeTypes.get(ctx);
       nodeTypes.put(ctx->parent, type);
-    } 
+    }
+    int currentValue = offsets.get(ctx);
+    offsets.put(ctx->parent, currentValue);
   }
 
   virtual void enterArrayLocation(decafParser::ArrayLocationContext *ctx) override {
@@ -707,8 +762,30 @@ public:
         nodeTypes.put(ctx, "int");
         //////////
         /*Check if the expression is in the symbol table*/
+        string arg1;
+        string arg2;
         int temp1Value =  quadsHandler.find(ctx->expression()[0]->getText());
         int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
+        /**/
+        if (temp1Value == 0){
+          if (offsets.get(ctx->expression()[0]) != 0){
+            arg1 = "Loc["+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+          } else {
+            arg1 = ctx->expression()[0]->getText();
+          }
+        } else {
+          arg1 = quadsHandler.getId(temp1Value);
+        }
+        /**/
+        if (temp1Value == 0){
+          if (offsets.get(ctx->expression()[1]) != 0){
+            arg2 = "Loc["+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+          } else {
+            arg2 = ctx->expression()[1]->getText();
+          }
+        } else {
+          arg2 = quadsHandler.getId(temp1Value);
+        }
         /*Get the temporal where the result is going to be store*/
         int resultTemp = temporalsHandler.getVariable();
         string func; 
@@ -723,15 +800,15 @@ public:
         quadsHandler.binding(
           "t"+to_string(resultTemp), 
           func, 
-          temp1Value == 0 ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value),
-          temp2Value == 0 ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value),
+          arg1,
+          arg2,
           ctx->getText()
         );
         cout <<
           "t"+to_string(resultTemp) << " " <<
           func << " " <<
-          ((temp1Value == 0) ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value)) << " " <<
-          ((temp2Value == 0) ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value)) << " " <<
+          arg1 << " " <<
+          arg2 << " " <<
           ctx->getText() << endl;
         //////////
         return;
@@ -757,8 +834,30 @@ public:
         nodeTypes.put(ctx, "int");
         //////////
         /*Check if the expression is in the symbol table*/
+        string arg1;
+        string arg2;
         int temp1Value =  quadsHandler.find(ctx->expression()[0]->getText());
         int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
+        /**/
+        if (temp1Value == 0){
+          if (offsets.get(ctx->expression()[0]) != 0){
+            arg1 = "Loc["+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+          } else {
+            arg1 = ctx->expression()[0]->getText();
+          }
+        } else {
+          arg1 = quadsHandler.getId(temp1Value);
+        }
+        /**/
+        if (temp1Value == 0){
+          if (offsets.get(ctx->expression()[1]) != 0){
+            arg2 = "Loc["+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+          } else {
+            arg2 = ctx->expression()[1]->getText();
+          }
+        } else {
+          arg2 = quadsHandler.getId(temp1Value);
+        }
         /*Get the temporal where the result is going to be store*/
         int resultTemp = temporalsHandler.getVariable();
         string func; 
@@ -771,15 +870,15 @@ public:
         quadsHandler.binding(
           "t"+to_string(resultTemp), 
           func, 
-          temp1Value == 0 ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value),
-          temp2Value == 0 ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value),
+          arg1,
+          arg2,
           ctx->getText()
         );
         cout <<
           "t"+to_string(resultTemp) << " " <<
           func << " " <<
-          ((temp1Value == 0) ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value)) << " " <<
-          ((temp2Value == 0) ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value)) << " " <<
+          arg1 << " " <<
+          arg2 << " " <<
           ctx->getText() << endl;
         //////////
         return;
@@ -804,8 +903,30 @@ public:
       if (exp1Type == exp2Type){
         nodeTypes.put(ctx, "boolean");
         /*Check if the expression is in the symbol table*/
+        string arg1;
+        string arg2;
         int temp1Value =  quadsHandler.find(ctx->expression()[0]->getText());
         int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
+        /**/
+        if (temp1Value == 0){
+          if (offsets.get(ctx->expression()[0]) != 0){
+            arg1 = "Loc["+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+          } else {
+            arg1 = ctx->expression()[0]->getText();
+          }
+        } else {
+          arg1 = quadsHandler.getId(temp1Value);
+        }
+        /**/
+        if (temp1Value == 0){
+          if (offsets.get(ctx->expression()[1]) != 0){
+            arg2 = "Loc["+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+          } else {
+            arg2 = ctx->expression()[1]->getText();
+          }
+        } else {
+          arg2 = quadsHandler.getId(temp1Value);
+        }
         /*Get the temporal where the result is going to be store*/
         // int resultTemp = temporalsHandler.getVariable();
         string func; 
@@ -822,8 +943,8 @@ public:
         quadsHandler.binding(
           correctLabel.top(), // add later
           func, 
-          temp1Value == 0 ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value),
-          temp2Value == 0 ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value),
+          arg1,
+          arg2,
           ""//ctx->getText()
         );
         quadsHandler.binding(
@@ -835,8 +956,8 @@ public:
         );
         cout <<
           func << " " <<
-          ((temp1Value == 0) ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value)) << " " <<
-          ((temp2Value == 0) ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value)) << " " <<
+          arg1 << " " <<
+          arg2 << " " <<
           correctLabel.top()<< " " <<
           ctx->getText() << endl;
         cout <<
@@ -892,8 +1013,30 @@ public:
         nodeTypes.put(ctx, "boolean");
         //////////
         /*Check if the expression is in the symbol table*/
+        string arg1;
+        string arg2;
         int temp1Value =  quadsHandler.find(ctx->expression()[0]->getText());
         int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
+        /**/
+        if (temp1Value == 0){
+          if (offsets.get(ctx->expression()[0]) != 0){
+            arg1 = "Loc["+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+          } else {
+            arg1 = ctx->expression()[0]->getText();
+          }
+        } else {
+          arg1 = quadsHandler.getId(temp1Value);
+        }
+        /**/
+        if (temp2Value == 0){
+          if (offsets.get(ctx->expression()[1]) != 0){
+            arg2 = "Loc["+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+          } else {
+            arg2 = ctx->expression()[1]->getText();
+          }
+        } else {
+          arg2 = quadsHandler.getId(temp2Value);
+        }
         /*Get the temporal where the result is going to be store*/
         int resultTemp = temporalsHandler.getVariable();
         string func; 
@@ -906,8 +1049,8 @@ public:
         quadsHandler.binding(
           correctLabel.top(), // add later
           func, 
-          temp1Value == 0 ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value),
-          temp2Value == 0 ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value),
+          arg1,
+          arg2,
           ""//ctx->getText()
         );
         quadsHandler.binding(
@@ -920,8 +1063,8 @@ public:
 
         cout <<
           func << " " <<
-          ((temp1Value == 0) ? ctx->expression()[0]->getText() : quadsHandler.getId(temp1Value)) << " " <<
-          ((temp2Value == 0) ? ctx->expression()[1]->getText() : quadsHandler.getId(temp2Value)) << " " <<
+          arg1 << " " <<
+          arg2 << " " <<
           correctLabel.top()<< " " <<
           ctx->getText() << endl;
         cout <<
@@ -1043,21 +1186,32 @@ public:
       nodeValues.put( ctx, nodeValues.get(ctx->expression()) ); // update to real, negativ value?
       //////////
       /*Check if the expression is in the symbol table*/
-      int temp1Value =  quadsHandler.find(ctx->expression()->getText());
+        string arg1;
+        int temp1Value =  quadsHandler.find(ctx->expression()->getText());
+        /**/
+        if (temp1Value == 0){
+          if (offsets.get(ctx->expression()) != 0){
+            arg1 = "Loc["+to_string(offsets.get(ctx->expression())-1)+"]";
+          } else {
+            arg1 = ctx->expression()->getText();
+          }
+        } else {
+          arg1 = quadsHandler.getId(temp1Value);
+        }
       /*Get the temporal where the result is going to be store*/
       int resultTemp = temporalsHandler.getVariable();
       /*Insert The Quad*/
       quadsHandler.binding(
         "t"+to_string(resultTemp), 
         "neg", 
-        temp1Value == 0 ? ctx->expression()->getText() : quadsHandler.getId(temp1Value),
+        arg1,
         "",
         ctx->getText()
       );
       cout <<
         "t"+to_string(resultTemp) << " " <<
         "neg" << " " <<
-        ((temp1Value == 0) ? ctx->expression()->getText() : quadsHandler.getId(temp1Value)) << " " <<
+        arg1 << " " <<
         "" << " " <<
         ctx->getText() << endl;
       //////////
