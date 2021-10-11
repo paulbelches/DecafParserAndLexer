@@ -38,6 +38,7 @@ private:
   stack<string> afterblock;
   tree::ParseTreeProperty<string> afterExpr; //put y get
   tree::ParseTreeProperty<int> offsets; //put y get
+  tree::ParseTreeProperty<string> offsetOp; //put y get
 
 
 public:
@@ -272,6 +273,32 @@ public:
   }
 
   virtual void exitBlock(decafParser::BlockContext *ctx) override {
+    if (!afterblock.empty()){
+      size_t start = afterblock.top().find(" ");
+      size_t finish = afterblock.top().find(" ", start+1, 1);
+      //cout << afterblock.top() << endl;
+      if (afterblock.top().substr(0, start) == "else"){
+        cout << "goto" << afterblock.top().substr(start, finish-start) << endl;
+        quadsHandler.binding(
+          afterblock.top().substr(start+1, finish-start),  
+          "goto", 
+          "",
+          "",
+          ""
+        );
+        start = finish;
+        finish = afterblock.top().find(" ", start+1, 1);
+      } 
+      cout << afterblock.top().substr(start, finish-start)<< ":" << endl;
+      quadsHandler.binding(
+        afterblock.top().substr(start+1, finish-start),  
+        "label", 
+        "",
+        "",
+        ""
+      );
+      afterblock.pop();
+    }
     string type = "void";
     for (int i = 0; i < ctx->varDeclaration().size(); i++){
       if (nodeTypes.get(ctx->varDeclaration(i)) == "error"){
@@ -298,32 +325,6 @@ public:
           }
         }
       }
-    }
-    if (!afterblock.empty()){
-      size_t start = afterblock.top().find(" ");
-      size_t finish = afterblock.top().find(" ", start+1, 1);
-      //cout << afterblock.top() << endl;
-      if (afterblock.top().substr(0, start) == "else"){
-        cout << "goto" << afterblock.top().substr(start, finish-start) << endl;
-        quadsHandler.binding(
-          afterblock.top().substr(start+1, finish-start),  
-          "goto", 
-          "",
-          "",
-          ""
-        );
-        start = finish;
-        finish = afterblock.top().find(" ", start+1, 1);
-      } 
-      cout << afterblock.top().substr(start, finish-start)<< ":" << endl;
-      quadsHandler.binding(
-        afterblock.top().substr(start+1, finish-start),  
-        "label", 
-        "",
-        "",
-        ""
-      );
-      afterblock.pop();
     }
     nodeTypes.put( ctx, "void" );
   }
@@ -439,9 +440,10 @@ public:
       int temp1Value =  quadsHandler.find(ctx->expression()->getText());
       /**/
       if (temp1Value == 0){
-        if (offsets.get(ctx->expression()) != 0){
+        if (offsetOp.get(ctx->expression()).size() != 0){
           string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
-          arg1 = loc+to_string(offsets.get(ctx->expression())-1)+"]";
+          int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()));
+          arg1 = loc+quadsHandler.getId(tempValue)+"]";
         } else {
           arg1 = ctx->expression()->getText();
         }
@@ -476,9 +478,10 @@ public:
       int temp2Value =  quadsHandler.find(ctx->location()->getText()); 
         /**/
         if (temp1Value == 0){
-          if (offsets.get(ctx->expression()) != 0){
+          if (offsetOp.get(ctx->expression()).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
-            arg1 = loc+to_string(offsets.get(ctx->expression())-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()));
+            arg1 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg1 = ctx->expression()->getText();
           }
@@ -487,9 +490,10 @@ public:
         }
         /**/
         if (temp2Value == 0){
-          if (offsets.get(ctx->location()) != 0){
+          if (offsetOp.get(ctx->location()).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->location()->getText())) ? "g[" : "l[";
-            arg2 = loc+to_string(offsets.get(ctx->location())-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->location()));
+            arg2 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg2 = ctx->location()->getText();
           }
@@ -528,13 +532,13 @@ public:
         //////////
         /*Check if the expression is in the symbol table*/
         int temp1Value =  quadsHandler.find(ctx->arg(argCount)->getText());
-        cout << "Prueba " << offsets.get(ctx->arg(argCount)->expression());
         string arg1;
         /**/
         if (temp1Value == 0){
-          if (offsets.get(ctx->arg(argCount)->expression()) != 0){
+          if (offsetOp.get(ctx->arg(argCount)->expression()).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->arg(argCount)->expression()->getText())) ? "g[" : "l[";
-            arg1 = loc+to_string(offsets.get(ctx->arg(argCount)->expression())-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->arg(argCount)->expression()));
+            arg1 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg1 = ctx->arg(argCount)->getText();
           }
@@ -647,8 +651,20 @@ public:
       //Check it exist on the symbol table
       if (symbolTable.elementExist(identifier) != -1){
         //Get type from symbol table
-        cout << identifier << " mi offset es " << symbolTable.getOffset(identifier) << endl;
-        offsets.put(ctx, symbolTable.getOffset(identifier) + 1 ); //Use to check if the offset is a result
+        /* refactoring */
+        string op = "$zero + "+to_string(symbolTable.getOffset(identifier));
+        if (quadsHandler.find(op) == 0) {
+          int resultTemp = temporalsHandler.getVariable();
+          quadsHandler.binding(
+            "t"+to_string(resultTemp), 
+            "add", 
+            "$zero",
+            to_string(symbolTable.getOffset(identifier)),
+            op
+          );
+          offsetOp.put(ctx, op); //Use to check if the offset is a result
+        }
+        /*            */
         string type = symbolTable.getType(identifier);
         nodeTypes.put( ctx, type );
       } else {
@@ -663,8 +679,8 @@ public:
       string type = nodeTypes.get(ctx);
       nodeTypes.put(ctx->parent, type);
     }
-    int currentValue = offsets.get(ctx);
-    offsets.put(ctx->parent, currentValue);
+    string current = offsetOp.get(ctx);
+    offsetOp.put(ctx->parent, current);
   }
 
   virtual void enterArrayLocation(decafParser::ArrayLocationContext *ctx) override {
@@ -716,6 +732,72 @@ public:
         if (type[type.size()-1] == ']' && type[type.size()-2] == '[') {
           type = type.substr(0, type.size()-2);
           nodeTypes.put( ctx, type );
+          /* refactoring */
+          //Locations of the separe operations
+          string temporal1 ;
+          string temporal2 ;
+          //Base id part 
+          string op = "$zero + "+to_string(symbolTable.getOffset(identifier));
+          if (quadsHandler.find(op) == 0) {
+            int resultTemp = temporalsHandler.getVariable();
+            quadsHandler.binding(
+              "t"+to_string(resultTemp), 
+              "add", 
+              "$zero",
+              to_string(symbolTable.getOffset(identifier)),
+              op
+            );
+            offsetOp.put(ctx, op); //Use to check if the offset is a result
+            temporal1 = "t"+to_string(resultTemp);
+          } else {
+            temporal1 = quadsHandler.getId( quadsHandler.find(op) );
+          }
+          //Array part
+          //Get the expression
+          string arg1;
+          int temp1Value =  quadsHandler.find(ctx->expression()->getText()); 
+          if (temp1Value == 0){
+            if (offsetOp.get(ctx->expression()).size() != 0){
+              string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
+              int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()));
+              arg1 = loc+quadsHandler.getId(tempValue)+"]";
+            } else {
+              arg1 = ctx->expression()->getText();
+            }
+          } else {
+              arg1 = quadsHandler.getId(temp1Value);
+          }
+          //Multiply by the size
+          string size = to_string(typeTable.getSize(type));
+          string op2 = arg1 + " * "+ size;
+          if (quadsHandler.find(op2) == 0) {
+            int resultTemp = temporalsHandler.getVariable();
+            quadsHandler.binding(
+              "t"+to_string(resultTemp), 
+              "mul", 
+              arg1,
+              size,
+              op2
+            );
+            temporal2 = "t"+to_string(resultTemp);
+          } else {
+            temporal2 = quadsHandler.getId( quadsHandler.find(op2) );
+          }
+          //add the offsets
+          string op3 = op + " + "+ op2;
+          if (quadsHandler.find(op3) == 0) {
+            int resultTemp = temporalsHandler.getVariable();
+            quadsHandler.binding(
+              "t"+to_string(resultTemp), 
+              "add", 
+              temporal1,
+              temporal2,
+              op3
+            );
+          }
+          offsetOp.put(ctx, op3);
+          
+          /*            */
         } else {
           cout << "line "<< ctx->start->getLine() <<", " + identifier + " is not and array. \n" ;
           nodeTypes.put(ctx, "error");
@@ -749,6 +831,8 @@ public:
       string type = nodeTypes.get(ctx);
       nodeTypes.put(ctx->parent, type);
     } 
+    string current = offsetOp.get(ctx);
+    offsetOp.put(ctx->parent, current);
   }
 
 //////////////////////////////////////////////////////////////////////////////  
@@ -772,9 +856,10 @@ public:
         int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
         /**/
         if (temp1Value == 0){
-          if (offsets.get(ctx->expression()[0]) != 0){
+          if (offsetOp.get(ctx->expression()[1]).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->expression()[0]->getText())) ? "g[" : "l[";
-            arg1 = loc+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()[0]));
+            arg1 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg1 = ctx->expression()[0]->getText();
           }
@@ -783,9 +868,10 @@ public:
         }
         /**/
         if (temp2Value == 0){
-          if (offsets.get(ctx->expression()[1]) != 0){
+          if (offsetOp.get(ctx->expression()[1]).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->expression()[1]->getText())) ? "g[" : "l[";
-            arg2 = loc+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()[1]));
+            arg2 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg2 = ctx->expression()[1]->getText();
           }
@@ -846,9 +932,11 @@ public:
         int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
         /**/
         if (temp1Value == 0){
-          if (offsets.get(ctx->expression()[0]) != 0){
+          if (offsetOp.get(ctx->expression()[0]).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->expression()[0]->getText())) ? "g[" : "l[";
-            arg1 = loc+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()[0]));
+            //add validation for checking if the temporal exist?
+            arg1 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg1 = ctx->expression()[0]->getText();
           }
@@ -857,9 +945,10 @@ public:
         }
         /**/
         if (temp2Value == 0){
-          if (offsets.get(ctx->expression()[1]) != 0){
+          if (offsetOp.get(ctx->expression()[1]).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->expression()[1]->getText())) ? "g[" : "l[";
-            arg2 = loc+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()[1]));
+            arg2 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg2 = ctx->expression()[1]->getText();
           }
@@ -917,9 +1006,10 @@ public:
         int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
         /**/
         if (temp1Value == 0){
-          if (offsets.get(ctx->expression()[0]) != 0){
+          if (offsetOp.get(ctx->expression()[0]).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->expression()[0]->getText())) ? "g[" : "l[";
-            arg1 = loc+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()[0]));
+            arg1 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg1 = ctx->expression()[0]->getText();
           }
@@ -928,9 +1018,10 @@ public:
         }
         /**/
         if (temp2Value == 0){
-          if (offsets.get(ctx->expression()[1]) != 0){
+          if (offsetOp.get(ctx->expression()[1]).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->expression()[1]->getText())) ? "g[" : "l[";
-            arg2 = loc+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()[1]));
+            arg2 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg2 = ctx->expression()[1]->getText();
           }
@@ -1029,9 +1120,10 @@ public:
         int temp2Value =  quadsHandler.find(ctx->expression()[1]->getText());
         /**/
         if (temp1Value == 0){
-          if (offsets.get(ctx->expression()[0]) != 0){
+          if (offsetOp.get(ctx->expression()[0]).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->expression()[0]->getText())) ? "g[" : "l[";
-            arg1 = loc+to_string(offsets.get(ctx->expression()[0])-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()[0]));
+            arg1 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg1 = ctx->expression()[0]->getText();
           }
@@ -1040,9 +1132,10 @@ public:
         }
         /**/
         if (temp2Value == 0){
-          if (offsets.get(ctx->expression()[1]) != 0){
+          if (offsetOp.get(ctx->expression()[1]).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->expression()[1]->getText())) ? "g[" : "l[";
-            arg2 = loc+to_string(offsets.get(ctx->expression()[1])-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()[1]));
+            arg2 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg2 = ctx->expression()[1]->getText();
           }
@@ -1117,6 +1210,7 @@ public:
       }
     }
   }
+
   virtual void enterExpressionPairCond(decafParser::ExpressionPairCondContext *ctx) override {
     //////////
     string func; 
@@ -1202,9 +1296,10 @@ public:
         int temp1Value =  quadsHandler.find(ctx->expression()->getText());
         /**/
         if (temp1Value == 0){
-          if (offsets.get(ctx->expression()) != 0){
+          if (offsetOp.get(ctx->expression()).size() != 0){
             string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
-            arg1 = loc+to_string(offsets.get(ctx->expression())-1)+"]";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()));
+            arg1 = loc+quadsHandler.getId(tempValue)+"]";
           } else {
             arg1 = ctx->expression()->getText();
           }
