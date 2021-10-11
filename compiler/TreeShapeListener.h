@@ -109,8 +109,10 @@ public:
       SymbolTable tempSymbolTable = symbolTable.top();
       structTable.binding("struct"+identifier, tempSymbolTable); 
       symbolTable.exit();
-      typeTable.binding("struct"+identifier, 0); //Modify size
-      typeTable.binding("struct"+identifier+"[]", 0); //Modify size
+      //cout << "Struct size " << tempSymbolTable.getBase() << " " << tempSymbolTable.getTop() << endl;
+      int structSize = tempSymbolTable.getTop() - tempSymbolTable.getBase();
+      typeTable.binding("struct"+identifier, structSize); 
+      typeTable.binding("struct"+identifier+"[]", structSize); 
       return;
     } else {
       cout << "line "<< ctx->start->getLine() <<", " + identifier + " already declared. \n";
@@ -650,21 +652,6 @@ public:
       string identifier = ctx->ID()->getText();
       //Check it exist on the symbol table
       if (symbolTable.elementExist(identifier) != -1){
-        //Get type from symbol table
-        /* refactoring 
-        string op = "$zero + "+to_string(symbolTable.getOffset(identifier));
-        if (quadsHandler.find(op) == 0) {
-          int resultTemp = temporalsHandler.getVariable();
-          quadsHandler.binding(
-            "t"+to_string(resultTemp), 
-            "add", 
-            "$zero",
-            to_string(symbolTable.getOffset(identifier)),
-            op
-          );
-        }
-        offsetOp.put(ctx, op); //Use to check if the offset is a result
-        /*            */
         string type = symbolTable.getType(identifier);
         nodeTypes.put( ctx, type );
       } else {
@@ -755,89 +742,6 @@ public:
         if (type[type.size()-1] == ']' && type[type.size()-2] == '[') {
           type = type.substr(0, type.size()-2);
           nodeTypes.put( ctx, type );
-          /* refactoring 
-          //Locations of the separe operations
-          string temporal1 ;
-          string temporal2 ;
-          //Base id part 
-          string op = "$zero + "+to_string(symbolTable.getOffset(identifier));
-          if (quadsHandler.find(op) == 0) {
-            int resultTemp = temporalsHandler.getVariable();
-            quadsHandler.binding(
-              "t"+to_string(resultTemp), 
-              "add", 
-              "$zero",
-              to_string(symbolTable.getOffset(identifier)),
-              op
-            );
-            offsetOp.put(ctx, op); //Use to check if the offset is a result
-            temporal1 = "t"+to_string(resultTemp);
-          } else {
-            temporal1 = quadsHandler.getId( quadsHandler.find(op) );
-          }
-          //Array part
-          //Get the expression
-          string arg1;
-          int temp1Value =  quadsHandler.find(ctx->expression()->getText()); 
-          if (temp1Value == 0){
-            if (offsetOp.get(ctx->expression()).size() != 0){
-              string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
-              int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()));
-              arg1 = loc+quadsHandler.getId(tempValue)+"]";
-            } else {
-              if (symbolTable.elementExist(identifier) != -1){              
-                string op = "$zero + "+to_string(symbolTable.getOffset(identifier));
-                int resultTemp = temporalsHandler.getVariable();
-                if (quadsHandler.find(op) == 0) {
-                  quadsHandler.binding(
-                    "t"+to_string(resultTemp), 
-                    "add", 
-                    "$zero",
-                    to_string(symbolTable.getOffset(identifier)),
-                    op
-                  );
-                }
-                string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
-                offsetOp.put(ctx, op); 
-                arg1 = loc+"t"+to_string(resultTemp)+"]";
-              } else {
-                arg1 = ctx->expression()->getText();
-              }
-            }
-          } else {
-              arg1 = quadsHandler.getId(temp1Value);
-          }
-          //Multiply by the size
-          string size = to_string(typeTable.getSize(type));
-          string op2 = arg1 + " * "+ size;
-          if (quadsHandler.find(op2) == 0) {
-            int resultTemp = temporalsHandler.getVariable();
-            quadsHandler.binding(
-              "t"+to_string(resultTemp), 
-              "mul", 
-              arg1,
-              size,
-              op2
-            );
-            temporal2 = "t"+to_string(resultTemp);
-          } else {
-            temporal2 = quadsHandler.getId( quadsHandler.find(op2) );
-          }
-          //add the offsets
-          string op3 = op + " + "+ op2;
-          if (quadsHandler.find(op3) == 0) {
-            int resultTemp = temporalsHandler.getVariable();
-            quadsHandler.binding(
-              "t"+to_string(resultTemp), 
-              "add", 
-              temporal1,
-              temporal2,
-              op3
-            );
-          }
-          offsetOp.put(ctx, op3);
-          
-          /*            */
         } else {
           cout << "line "<< ctx->start->getLine() <<", " + identifier + " is not and array. \n" ;
           nodeTypes.put(ctx, "error");
