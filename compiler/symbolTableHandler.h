@@ -99,14 +99,17 @@ class SymbolTableHandler {
 
     //Para llamadas y referencias, no declaraciones
     bool isGlobal(string identifier){
-        bool isGlobal = false;
+        bool isglobal = true;
         int length = symbolTable.size();
         stack<SymbolTable> tempSymbolTable;
+        cout << identifier << endl;
         for (int i = 0; i < length; i++){
+            cout << "I : " << i << " "  << endl;
             //Check if the identifier exist
             if (symbolTable.top().hasElement(identifier)) {
                 //check if it is a param
-                isGlobal = i == length - 1;
+                cout << length << " "<< (i == length - 1) << endl;
+                isglobal = i == length - 1;
                 break;
             }
             tempSymbolTable.push(symbolTable.top());
@@ -117,7 +120,7 @@ class SymbolTableHandler {
             symbolTable.push(tempSymbolTable.top());
             tempSymbolTable.pop();
         }
-        return isGlobal;
+        return isglobal;
     }
 
     //Para llamadas y referencias, no declaraciones

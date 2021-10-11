@@ -651,7 +651,7 @@ public:
       //Check it exist on the symbol table
       if (symbolTable.elementExist(identifier) != -1){
         //Get type from symbol table
-        /* refactoring */
+        /* refactoring 
         string op = "$zero + "+to_string(symbolTable.getOffset(identifier));
         if (quadsHandler.find(op) == 0) {
           int resultTemp = temporalsHandler.getVariable();
@@ -662,8 +662,8 @@ public:
             to_string(symbolTable.getOffset(identifier)),
             op
           );
-          offsetOp.put(ctx, op); //Use to check if the offset is a result
         }
+        offsetOp.put(ctx, op); //Use to check if the offset is a result
         /*            */
         string type = symbolTable.getType(identifier);
         nodeTypes.put( ctx, type );
@@ -679,8 +679,31 @@ public:
       string type = nodeTypes.get(ctx);
       nodeTypes.put(ctx->parent, type);
     }
+    string identifier = ctx->ID()->getText();
+    if (symbolTable.elementExist(identifier) != -1){
+        //Get type from symbol table
+        /* refactoring */
+        string op = "$zero + "+to_string(symbolTable.getOffset(identifier));
+        if (quadsHandler.find(op) == 0) {
+          int resultTemp = temporalsHandler.getVariable();
+          quadsHandler.binding(
+            "t"+to_string(resultTemp), 
+            "add", 
+            "$zero",
+            to_string(symbolTable.getOffset(identifier)),
+            op
+          );
+        }
+        offsetOp.put(ctx, op); //Use to check if the offset is a result
+        offsetOp.put(ctx->parent, op); // tranfer the value to the father expression
+        
+        /*            */
+    }
+    /*
     string current = offsetOp.get(ctx);
-    offsetOp.put(ctx->parent, current);
+    offsetOp.put(ctx->parent, current);*/
+
+
   }
 
   virtual void enterArrayLocation(decafParser::ArrayLocationContext *ctx) override {
@@ -732,7 +755,7 @@ public:
         if (type[type.size()-1] == ']' && type[type.size()-2] == '[') {
           type = type.substr(0, type.size()-2);
           nodeTypes.put( ctx, type );
-          /* refactoring */
+          /* refactoring 
           //Locations of the separe operations
           string temporal1 ;
           string temporal2 ;
@@ -762,7 +785,24 @@ public:
               int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()));
               arg1 = loc+quadsHandler.getId(tempValue)+"]";
             } else {
-              arg1 = ctx->expression()->getText();
+              if (symbolTable.elementExist(identifier) != -1){              
+                string op = "$zero + "+to_string(symbolTable.getOffset(identifier));
+                int resultTemp = temporalsHandler.getVariable();
+                if (quadsHandler.find(op) == 0) {
+                  quadsHandler.binding(
+                    "t"+to_string(resultTemp), 
+                    "add", 
+                    "$zero",
+                    to_string(symbolTable.getOffset(identifier)),
+                    op
+                  );
+                }
+                string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
+                offsetOp.put(ctx, op); 
+                arg1 = loc+"t"+to_string(resultTemp)+"]";
+              } else {
+                arg1 = ctx->expression()->getText();
+              }
             }
           } else {
               arg1 = quadsHandler.getId(temp1Value);
@@ -819,6 +859,7 @@ public:
           cout << "line "<< ctx->start->getLine() <<", negativ index. \n" ;
           nodeTypes.put(ctx, "error");
         }
+        //validate size of array
       } catch(exception) {
         ;
       }
@@ -827,12 +868,79 @@ public:
       nodeTypes.put(ctx, "error");
     }
     ///
+    string type = nodeTypes.get(ctx);
     if (nodeValues.get(ctx) == "son" ){
-      string type = nodeTypes.get(ctx);
       nodeTypes.put(ctx->parent, type);
     } 
-    string current = offsetOp.get(ctx);
-    offsetOp.put(ctx->parent, current);
+    /* refactoring */
+    string temporal1 ;
+    string temporal2 ;
+    string identifier = ctx->ID()->getText();
+    if (symbolTable.elementExist(identifier) != -1){
+        //Get the address from identifier
+        string op = "$zero + "+to_string(symbolTable.getOffset(identifier));
+        if (quadsHandler.find(op) == 0) {
+          int resultTemp = temporalsHandler.getVariable();
+          quadsHandler.binding(
+            "t"+to_string(resultTemp), 
+            "add", 
+            "$zero",
+            to_string(symbolTable.getOffset(identifier)),
+            op
+          );
+          temporal1 = "t"+to_string(resultTemp);
+        } else {
+          temporal1 = quadsHandler.getId( quadsHandler.find(op) );
+        }
+        offsetOp.put(ctx, op); //Use to check if the offset is a result
+        //Get the expression
+        string arg1;
+        int temp1Value =  quadsHandler.find(ctx->expression()->getText()); 
+        if (temp1Value == 0){
+          if (offsetOp.get(ctx->expression()).size() != 0){
+            string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
+            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()));
+            arg1 = loc+quadsHandler.getId(tempValue)+"]";
+          } else {
+            arg1 = ctx->expression()->getText();
+          }
+        } else {
+          arg1 = quadsHandler.getId(temp1Value);
+        }
+
+        //Multiply by the size
+        string size = to_string(typeTable.getSize(type));
+        string op2 = arg1 + " * "+ size;
+        if (quadsHandler.find(op2) == 0) {
+          int resultTemp = temporalsHandler.getVariable();
+          quadsHandler.binding(
+            "t"+to_string(resultTemp), 
+            "mul", 
+            arg1,
+            size,
+            op2
+          );
+          temporal2 = "t"+to_string(resultTemp);
+        } else {
+          temporal2 = quadsHandler.getId( quadsHandler.find(op2) );
+        }
+
+        //add the offsets
+        string op3 = op + " + "+ op2;
+        if (quadsHandler.find(op3) == 0) {
+          int resultTemp = temporalsHandler.getVariable();
+          quadsHandler.binding(
+            "t"+to_string(resultTemp), 
+            "add", 
+            temporal1,
+            temporal2,
+            op3
+          );
+        }
+        offsetOp.put(ctx, op3);
+        offsetOp.put(ctx->parent, op3); // tranfer the value to the father expression
+    }
+  /*            */
   }
 
 //////////////////////////////////////////////////////////////////////////////  
