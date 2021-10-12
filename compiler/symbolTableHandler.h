@@ -99,6 +99,21 @@ class SymbolTableHandler {
 
     //Para llamadas y referencias, no declaraciones
     bool isGlobal(string identifier){
+        //Clear the identifier
+        //Check if it is a struct
+        size_t p = 0;
+        p = identifier.find(".");
+        if (p > 0){
+            identifier = identifier.substr(0, p);
+        }
+        //Check if it is a array
+        p = 0;
+        p = identifier.find("[");
+        if (p > 0){
+            identifier = identifier.substr(0, p);
+        }
+        cout << "Result "<< identifier << endl;
+        //
         bool isglobal = true;
         int length = symbolTable.size();
         stack<SymbolTable> tempSymbolTable;

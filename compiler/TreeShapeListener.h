@@ -69,7 +69,7 @@ public:
     } 
     /////////// Esto tengo //////////////
     cout << "/////////// Esto tengo //////////////" << endl;
-    cout << quadsHandler.toString() << endl;
+    cout << quadsHandler.toString();
   }
   //Check for errors
   virtual void exitVariableDeclaration(decafParser::VariableDeclarationContext *ctx) override {    
@@ -81,7 +81,7 @@ public:
     } else {
       type =  ctx->varType()->getText();
       //////////
-      cout << "inicializar "<< identifier << endl;
+      //cout << "inicializar "<< identifier << endl;
       //////////
     }
     
@@ -109,7 +109,7 @@ public:
       SymbolTable tempSymbolTable = symbolTable.top();
       structTable.binding("struct"+identifier, tempSymbolTable); 
       symbolTable.exit();
-      //cout << "Struct size " << tempSymbolTable.getBase() << " " << tempSymbolTable.getTop() << endl;
+      //cout << "Struct size "<< identifier<< " " << tempSymbolTable.getBase() << " " << tempSymbolTable.getTop() << endl;
       int structSize = tempSymbolTable.getTop() - tempSymbolTable.getBase();
       typeTable.binding("struct"+identifier, structSize); 
       typeTable.binding("struct"+identifier+"[]", structSize); 
@@ -157,7 +157,7 @@ public:
     string identifier = ctx->ID()->getText();
     if (!functionTable.hasElement(identifier)){
       //////////
-      cout << "Function "+identifier+" :"<< endl;
+      //cout << "Function "+identifier+" :"<< endl;
       quadsHandler.binding(
         identifier, 
         "function", 
@@ -179,7 +179,7 @@ public:
           "",
           ctx->parameter(parameterCounter)->children[1]->getText()
         );
-        cout << "t"+to_string(resultTemp)+" load "+ctx->parameter(parameterCounter)->children[1]->getText()<< endl;
+        //cout << "t"+to_string(resultTemp)+" load "+ctx->parameter(parameterCounter)->children[1]->getText()<< endl;
         //////////
         nodeValues.put(ctx->parameter(parameterCounter), identifier);
         parameterCounter--;
@@ -221,7 +221,7 @@ public:
         "",
         ""
       );
-      cout << "End"+identifier<< endl;
+      //cout << "End"+identifier<< endl;
       //////////
     }
   }
@@ -262,7 +262,7 @@ public:
   }
   virtual void enterBlock(decafParser::BlockContext *ctx) override {
     if (!beforeblock.empty()){
-      cout << beforeblock.top() << ":" << endl;
+      //cout << beforeblock.top() << ":" << endl;
       quadsHandler.binding(
         beforeblock.top(),  
         "label", 
@@ -280,7 +280,7 @@ public:
       size_t finish = afterblock.top().find(" ", start+1, 1);
       //cout << afterblock.top() << endl;
       if (afterblock.top().substr(0, start) == "else"){
-        cout << "goto" << afterblock.top().substr(start, finish-start) << endl;
+        //cout << "goto" << afterblock.top().substr(start, finish-start) << endl;
         quadsHandler.binding(
           afterblock.top().substr(start+1, finish-start),  
           "goto", 
@@ -291,7 +291,7 @@ public:
         start = finish;
         finish = afterblock.top().find(" ", start+1, 1);
       } 
-      cout << afterblock.top().substr(start, finish-start)<< ":" << endl;
+      //cout << afterblock.top().substr(start, finish-start)<< ":" << endl;
       quadsHandler.binding(
         afterblock.top().substr(start+1, finish-start),  
         "label", 
@@ -459,7 +459,7 @@ public:
         "",
         ""
       );
-      cout << "rr load "+arg1<< endl;
+      //cout << "rr load "+arg1<< endl;
         //////////
       //nodeValues.put( ctx, "return" );
     }
@@ -510,7 +510,7 @@ public:
         "",
         ""
       );
-      cout << "Asign "+ctx->location()->getText()+" "+ctx->expression()->getText()<< endl;
+      //cout << "Asign "+ctx->location()->getText()+" "+ctx->expression()->getText()<< endl;
       //////////
     } else {
       cout << "line "<< ctx->start->getLine() <<", cannot asign " << expressionType << " to " << locationType << "\n";
@@ -557,9 +557,6 @@ public:
           "",
           ""
         );
-        cout << "push "
-        << ( (temp1Value == 0) ? ctx->arg(argCount)->getText() : quadsHandler.getId(temp1Value) )
-        << endl;
         ////////// 
         args.push_back(nodeTypes.get(ctx->arg(argCount)));
         argCount++;
@@ -581,7 +578,6 @@ public:
           "",
           ""
         );
-        cout << "goto "<< identifier<< endl;
         //Read return value
         quadsHandler.binding(
           "t"+to_string(resultTemp), 
@@ -590,12 +586,6 @@ public:
           "",
           ctx->getText()
         );
-        cout <<
-          "t"+to_string(resultTemp) << " " <<
-          "load"<<
-          "rr" << " " <<
-          ctx->getText() << endl;
-
         //////////
       } else {
         //Print error message
@@ -662,35 +652,73 @@ public:
   }
   
   virtual void exitVarIdLocation(decafParser::VarIdLocationContext *ctx) override {
+    string identifier = ctx->ID()->getText();
     if (nodeValues.get(ctx) == "son" ){
+      /* get my offset */
+      string fatherType = nodeTypes.get(ctx->parent);
+      int offset = structTable.getOffset(fatherType, identifier);
+      //cout << identifier << " My offset es " << offset << endl;
+      //Get the address from identifier
+      string op = "$zero + "+to_string(offset);
+      if (quadsHandler.find(op) == 0) {
+        int resultTemp = temporalsHandler.getVariable();
+        quadsHandler.binding(
+          "t"+to_string(resultTemp), 
+          "add", 
+          "$zero",
+          to_string(offset),
+          op
+        );
+      } 
+      offsetOp.put(ctx, op); //Use to check if the offset is a result
+      //////////////////
       string type = nodeTypes.get(ctx);
       nodeTypes.put(ctx->parent, type);
-    }
-    string identifier = ctx->ID()->getText();
-    if (symbolTable.elementExist(identifier) != -1){
+    } else {
+      if (symbolTable.elementExist(identifier) != -1){
         //Get type from symbol table
         /* refactoring */
-        string op = "$zero + "+to_string(symbolTable.getOffset(identifier));
+        int offset = symbolTable.getOffset(identifier);
+        //cout << identifier << " My offset padre es " << offset << endl;
+        string op = "$zero + "+to_string(offset);
         if (quadsHandler.find(op) == 0) {
           int resultTemp = temporalsHandler.getVariable();
           quadsHandler.binding(
             "t"+to_string(resultTemp), 
             "add", 
             "$zero",
-            to_string(symbolTable.getOffset(identifier)),
+            to_string(offset),
             op
           );
         }
         offsetOp.put(ctx, op); //Use to check if the offset is a result
         offsetOp.put(ctx->parent, op); // tranfer the value to the father expression
-        
-        /*            */
+      }
     }
-    /*
-    string current = offsetOp.get(ctx);
-    offsetOp.put(ctx->parent, current);*/
 
-
+    /* check if it has a child */
+    if (ctx->location() != 0){
+      int temp1Value = quadsHandler.find( offsetOp.get(ctx) );
+      int temp2Value = quadsHandler.find( offsetOp.get(ctx->location()) );
+      //add validations?
+      string arg1 = quadsHandler.getId(temp1Value);
+      string arg2 = quadsHandler.getId(temp2Value);
+      string op = arg1+" + "+arg2;
+      if (quadsHandler.find(op) == 0) {
+        int resultTemp = temporalsHandler.getVariable();
+        quadsHandler.binding(
+          "t"+to_string(resultTemp), 
+          "add", 
+          arg1,
+          arg2,
+          op
+        );
+      }
+      offsetOp.put(ctx, op);
+      if (nodeValues.get(ctx) != "son" ){
+        offsetOp.put(ctx->parent, op);
+      }
+    }
   }
 
   virtual void enterArrayLocation(decafParser::ArrayLocationContext *ctx) override {
@@ -771,80 +799,126 @@ public:
       cout << "line "<< ctx->start->getLine() <<", index of type "+ nodeTypes.get(ctx->expression()) + ".\n";
       nodeTypes.put(ctx, "error");
     }
-    ///
+    /// rel offset
+    string identifier = ctx->ID()->getText();
     string type = nodeTypes.get(ctx);
     if (nodeValues.get(ctx) == "son" ){
+      /* get my offset */
+      string fatherType = nodeTypes.get(ctx->parent);
+      int offset = structTable.getOffset(fatherType, identifier);
+      //cout << identifier << " My offset es " << offset << endl;
+      //Get the address from identifier
+      string op = "$zero + "+to_string(offset);
+      if (quadsHandler.find(op) == 0) {
+        int resultTemp = temporalsHandler.getVariable();
+        quadsHandler.binding(
+          "t"+to_string(resultTemp), 
+          "add", 
+          "$zero",
+          to_string(offset),
+          op
+        );
+      } 
+      offsetOp.put(ctx, op); //Use to check if the offset is a result
+      //////////////////
       nodeTypes.put(ctx->parent, type);
-    } 
-    /* refactoring */
-    string temporal1 ;
-    string temporal2 ;
-    string identifier = ctx->ID()->getText();
-    if (symbolTable.elementExist(identifier) != -1){
-        //Get the address from identifier
-        string op = "$zero + "+to_string(symbolTable.getOffset(identifier));
+    } else {
+      if (symbolTable.elementExist(identifier) != -1){
+        //Get type from symbol table
+        /* refactoring */
+        int offset = symbolTable.getOffset(identifier);
+        //cout << identifier << " My offset padre es " << offset << endl;
+        string op = "$zero + "+to_string(offset);
         if (quadsHandler.find(op) == 0) {
           int resultTemp = temporalsHandler.getVariable();
           quadsHandler.binding(
             "t"+to_string(resultTemp), 
             "add", 
             "$zero",
-            to_string(symbolTable.getOffset(identifier)),
+            to_string(offset),
             op
           );
-          temporal1 = "t"+to_string(resultTemp);
-        } else {
-          temporal1 = quadsHandler.getId( quadsHandler.find(op) );
         }
         offsetOp.put(ctx, op); //Use to check if the offset is a result
-        //Get the expression
-        string arg1;
-        int temp1Value =  quadsHandler.find(ctx->expression()->getText()); 
-        if (temp1Value == 0){
-          if (offsetOp.get(ctx->expression()).size() != 0){
-            string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
-            int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()));
-            arg1 = loc+quadsHandler.getId(tempValue)+"]";
-          } else {
-            arg1 = ctx->expression()->getText();
-          }
-        } else {
-          arg1 = quadsHandler.getId(temp1Value);
-        }
-
-        //Multiply by the size
-        string size = to_string(typeTable.getSize(type));
-        string op2 = arg1 + " * "+ size;
-        if (quadsHandler.find(op2) == 0) {
-          int resultTemp = temporalsHandler.getVariable();
-          quadsHandler.binding(
-            "t"+to_string(resultTemp), 
-            "mul", 
-            arg1,
-            size,
-            op2
-          );
-          temporal2 = "t"+to_string(resultTemp);
-        } else {
-          temporal2 = quadsHandler.getId( quadsHandler.find(op2) );
-        }
-
-        //add the offsets
-        string op3 = op + " + "+ op2;
-        if (quadsHandler.find(op3) == 0) {
-          int resultTemp = temporalsHandler.getVariable();
-          quadsHandler.binding(
-            "t"+to_string(resultTemp), 
-            "add", 
-            temporal1,
-            temporal2,
-            op3
-          );
-        }
-        offsetOp.put(ctx, op3);
-        offsetOp.put(ctx->parent, op3); // tranfer the value to the father expression
+        offsetOp.put(ctx->parent, op); // tranfer the value to the father expression
+      }
     }
-  /*            */
+   
+    //local offset    
+    //Get the expression
+    string arg1;
+    int temp1Value =  quadsHandler.find(ctx->expression()->getText()); 
+    if (temp1Value == 0){
+      if (offsetOp.get(ctx->expression()).size() != 0){
+        string loc = (symbolTable.isGlobal(ctx->expression()->getText())) ? "g[" : "l[";
+        int tempValue =  quadsHandler.find(offsetOp.get(ctx->expression()));
+        arg1 = loc+quadsHandler.getId(tempValue)+"]";
+      } else {
+        arg1 = ctx->expression()->getText();
+      }
+    } else {
+      arg1 = quadsHandler.getId(temp1Value);
+    }
+
+    string arg2;
+    //Multiply by the size
+    string size = to_string(typeTable.getSize(type));
+    string op2 = arg1 + " * "+ size;
+    if (quadsHandler.find(op2) == 0) {
+      int resultTemp = temporalsHandler.getVariable();
+      quadsHandler.binding(
+        "t"+to_string(resultTemp), 
+        "mul", 
+        arg1,
+        size,
+        op2
+      );
+      arg2 = "t"+to_string(resultTemp);
+    } else {
+      arg2 = quadsHandler.getId( quadsHandler.find(op2) );
+    }
+    //add the offsets
+    temp1Value = quadsHandler.find( offsetOp.get(ctx) );
+    arg1 = quadsHandler.getId(temp1Value);
+    string op3 = arg1 + " + "+ arg2;
+    if (quadsHandler.find(op3) == 0) {
+      int resultTemp = temporalsHandler.getVariable();
+      quadsHandler.binding(
+        "t"+to_string(resultTemp), 
+        "add", 
+        arg1,
+        arg2,
+        op3
+      );
+    }
+    offsetOp.put(ctx, op3);
+    if (nodeValues.get(ctx) != "son" ){
+      offsetOp.put(ctx->parent, op3);
+    }
+    
+    /* check if it has a child */
+    if (ctx->location() != 0){
+      int temp1Value = quadsHandler.find( offsetOp.get(ctx) );
+      int temp2Value = quadsHandler.find( offsetOp.get(ctx->location()) );
+      //add validations?
+      string arg1 = quadsHandler.getId(temp1Value);
+      string arg2 = quadsHandler.getId(temp2Value);
+      string op = arg1+" + "+arg2;
+      if (quadsHandler.find(op) == 0) {
+        int resultTemp = temporalsHandler.getVariable();
+        quadsHandler.binding(
+          "t"+to_string(resultTemp), 
+          "add", 
+          arg1,
+          arg2,
+          op
+        );
+      }
+      offsetOp.put(ctx, op);
+      if (nodeValues.get(ctx) != "son" ){
+        offsetOp.put(ctx->parent, op);
+      }
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////////  
@@ -908,12 +982,6 @@ public:
           arg2,
           ctx->getText()
         );
-        cout <<
-          "t"+to_string(resultTemp) << " " <<
-          func << " " <<
-          arg1 << " " <<
-          arg2 << " " <<
-          ctx->getText() << endl;
         //////////
         return;
       } else {
@@ -983,12 +1051,6 @@ public:
           arg2,
           ctx->getText()
         );
-        cout <<
-          "t"+to_string(resultTemp) << " " <<
-          func << " " <<
-          arg1 << " " <<
-          arg2 << " " <<
-          ctx->getText() << endl;
         //////////
         return;
       } else {
@@ -1067,21 +1129,11 @@ public:
           "",
           ""//ctx->getText()
         );
-        cout <<
-          func << " " <<
-          arg1 << " " <<
-          arg2 << " " <<
-          correctLabel.top()<< " " <<
-          ctx->getText() << endl;
-        cout <<
-          "goto " <<
-          wrongLabel.top()<< " " <<
-          ctx->getText() << endl;
-                //////////
+        //////////
         /* Check for after writng */                        
         string parentValue = afterExpr.get(ctx->parent);
         if (parentValue == "switch") {
-          cout << "Switch back " << endl;
+          //cout << "Switch back " << endl;
           string label = wrongLabel.top();
           wrongLabel.top() = correctLabel.top();
           correctLabel.top() = label;
@@ -1094,7 +1146,7 @@ public:
             "",
             ""
           );
-          cout << parentValue << ":" << endl;
+          //cout << parentValue << ":" << endl;
           if (ctx->parent->children[1]->getText() == "&&"){
             correctLabel.pop();
           } else {
@@ -1177,22 +1229,10 @@ public:
           "",
           ""//ctx->getText()
         );
-
-        cout <<
-          func << " " <<
-          arg1 << " " <<
-          arg2 << " " <<
-          correctLabel.top()<< " " <<
-          ctx->getText() << endl;
-        cout <<
-          "goto " <<
-          wrongLabel.top()<< " " <<
-          ctx->getText() << endl;
-
         /* Check for after writng */                        
         string parentValue = afterExpr.get(ctx->parent);
         if (parentValue == "switch") {
-          cout << "Switch back " << endl;
+          //cout << "Switch back " << endl;
           string label = wrongLabel.top();
           wrongLabel.top() = correctLabel.top();
           correctLabel.top() = label;
@@ -1205,7 +1245,7 @@ public:
             "",
             ""
           );
-          cout << parentValue << ":" << endl;
+          //cout << parentValue << ":" << endl;
           if (ctx->parent->children[1]->getText() == "&&"){
             correctLabel.pop();
           } else {
@@ -1252,7 +1292,7 @@ public:
         /* Check for after writng */                        
         string parentValue = afterExpr.get(ctx->parent);
         if (parentValue == "switch") {
-          cout << "Switch back " << endl;
+          //cout << "Switch back " << endl;
           string label = wrongLabel.top();
           wrongLabel.top() = correctLabel.top();
           correctLabel.top() = label;
@@ -1265,7 +1305,7 @@ public:
             "",
             ""
           );
-          cout << parentValue << ":" << endl;
+          //cout << parentValue << ":" << endl;
           if (ctx->parent->children[1]->getText() == "&&"){
             correctLabel.pop();
           } else {
@@ -1328,12 +1368,6 @@ public:
         "",
         ctx->getText()
       );
-      cout <<
-        "t"+to_string(resultTemp) << " " <<
-        "neg" << " " <<
-        arg1 << " " <<
-        "" << " " <<
-        ctx->getText() << endl;
       //////////
     } else {
       nodeTypes.put( ctx, "error" );
@@ -1359,7 +1393,7 @@ public:
       /* Check for after writng */                        
       string parentValue = afterExpr.get(ctx->parent);
       if (parentValue == "switch") {
-        cout << "Switch back " << endl;
+        //cout << "Switch back " << endl;
         string label = wrongLabel.top();
         wrongLabel.top() = correctLabel.top();
         correctLabel.top() = label;
@@ -1372,7 +1406,7 @@ public:
           "",
           ""
         );
-        cout << parentValue << ":" << endl;
+        //cout << parentValue << ":" << endl;
         if (ctx->parent->children[1]->getText() == "&&"){
           correctLabel.pop();
         } else {
@@ -1407,18 +1441,12 @@ public:
           "",
           ctx->getText()
         );
-        cout <<
-          "t"+to_string(resultTemp) << " " <<
-          "mov" << " " <<
-          quadsHandler.getId(temp1Value) << " " <<
-          "" << " " <<
-          ctx->getText() << endl;
         //////////
       }
       /* Check for after writng */                        
       string parentValue = afterExpr.get(ctx->parent);
       if (parentValue == "switch") {
-        cout << "Switch back " << endl;
+        //cout << "Switch back " << endl;
         string label = wrongLabel.top();
         wrongLabel.top() = correctLabel.top();
         correctLabel.top() = label;
@@ -1431,7 +1459,7 @@ public:
           "",
           ""
         );
-        cout << parentValue << ":" << endl;
+        //cout << parentValue << ":" << endl;
         if (ctx->parent->children[1]->getText() == "&&"){
           correctLabel.pop();
         } else {
@@ -1477,7 +1505,7 @@ public:
       /* Check for after writng */                        
       string parentValue = afterExpr.get(ctx->parent);
       if (parentValue == "switch") {
-        cout << "Switch back " << endl;
+        //cout << "Switch back " << endl;
         string label = wrongLabel.top();
         wrongLabel.top() = correctLabel.top();
         correctLabel.top() = label;
@@ -1490,7 +1518,7 @@ public:
           "",
           ""
         );
-        cout << parentValue << ":" << endl;
+        //cout << parentValue << ":" << endl;
         if (ctx->parent->children[1]->getText() == "&&"){
           correctLabel.pop();
         } else {

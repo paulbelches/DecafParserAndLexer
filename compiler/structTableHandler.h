@@ -100,6 +100,27 @@ class StructTableHandler {
         return s;
     }
 
+    int getOffset(string parentType, string identifier){
+        int offset = -1;
+        int length = structTable.size();
+        //cout << length << endl;
+        stack<StructTable> tempStructTable;
+        for (int i = 0; i < length; i++){
+            if (structTable.top().hasElement(parentType)) {
+                offset = structTable.top().lookup(parentType).lookup(identifier).offset;
+                break;
+            }
+            tempStructTable.push(structTable.top());
+            structTable.pop();
+        }
+        length = tempStructTable.size();
+        for (int i = 0; i < length; i++){
+            structTable.push(tempStructTable.top());
+            tempStructTable.pop();
+        }   
+        return offset;
+    }
+
 
 
 };
