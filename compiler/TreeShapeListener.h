@@ -859,18 +859,58 @@ public:
     } else {
       arg1 = quadsHandler.getId(temp1Value);
     }
+    int size = typeTable.getSize(type);
+    int identifierSize = symbolTable.getSize(identifier);
+    /*Dinamic verficiaction*/
+    int resultTemp = temporalsHandler.getVariable();
+    int resultTemp2 = temporalsHandler.getVariable();
+    quadsHandler.binding(
+      "t"+to_string(resultTemp), 
+      "gt", 
+      arg1,
+      to_string(identifierSize / size) ,
+      ""
+    );
+    quadsHandler.binding(
+      "t"+to_string(resultTemp2),
+      "goto", 
+      "",
+      "",
+      ""
+    );
+    quadsHandler.binding(
+      "t"+to_string(resultTemp),   
+      "label", 
+      "",
+      "",
+      ""
+    );
+    quadsHandler.binding(
+      "",   
+      "Panic", 
+      "",
+      "",
+      ""
+    );
+    quadsHandler.binding(
+      "t"+to_string(resultTemp2),   
+      "label", 
+      "",
+      "",
+      ""
+    );
+    /**/
 
     string arg2;
     //Multiply by the size
-    string size = to_string(typeTable.getSize(type));
-    string op2 = arg1 + " * "+ size;
+    string op2 = arg1 + " * "+ to_string(size);
     if (quadsHandler.find(op2) == 0) {
       int resultTemp = temporalsHandler.getVariable();
       quadsHandler.binding(
         "t"+to_string(resultTemp), 
         "mul", 
         arg1,
-        size,
+        to_string(size),
         op2
       );
       arg2 = "t"+to_string(resultTemp);

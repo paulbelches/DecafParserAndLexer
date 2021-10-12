@@ -98,6 +98,46 @@ class SymbolTableHandler {
     }
 
     //Para llamadas y referencias, no declaraciones
+    int getSize(string identifier){
+        //Clear the identifier
+        //Check if it is a struct
+        size_t p = 0;
+        p = identifier.find(".");
+        if (p > 0){
+            identifier = identifier.substr(0, p);
+        }
+        //Check if it is a array
+        p = 0;
+        p = identifier.find("[");
+        if (p > 0){
+            identifier = identifier.substr(0, p);
+        }
+        //cout << "Result "<< identifier << endl;
+        //
+        int size = -1;
+        int length = symbolTable.size();
+        stack<SymbolTable> tempSymbolTable;
+        for (int i = 0; i < length; i++){
+            //Check if the identifier exist
+            if (symbolTable.top().hasElement(identifier)) {
+                //check if it is a param
+                if (symbolTable.top().lookup(identifier).size > 0){
+                    size = symbolTable.top().lookup(identifier).size;
+                    break;
+                }
+            }
+            tempSymbolTable.push(symbolTable.top());
+            symbolTable.pop();
+        }
+        length = tempSymbolTable.size();
+        for (int i = 0; i < length; i++){
+            symbolTable.push(tempSymbolTable.top());
+            tempSymbolTable.pop();
+        }
+        return size;
+    }
+
+    //Para llamadas y referencias, no declaraciones
     bool isGlobal(string identifier){
         //Clear the identifier
         //Check if it is a struct
@@ -112,18 +152,18 @@ class SymbolTableHandler {
         if (p > 0){
             identifier = identifier.substr(0, p);
         }
-        cout << "Result "<< identifier << endl;
+        //cout << "Result "<< identifier << endl;
         //
         bool isglobal = true;
         int length = symbolTable.size();
         stack<SymbolTable> tempSymbolTable;
-        cout << identifier << endl;
+        //cout << identifier << endl;
         for (int i = 0; i < length; i++){
-            cout << "I : " << i << " "  << endl;
+            //cout << "I : " << i << " "  << endl;
             //Check if the identifier exist
             if (symbolTable.top().hasElement(identifier)) {
                 //check if it is a param
-                cout << length << " "<< (i == length - 1) << endl;
+                //cout << length << " "<< (i == length - 1) << endl;
                 isglobal = i == length - 1;
                 break;
             }
