@@ -11,6 +11,7 @@ const  Terminal = (props) => {
             <div class="button red"></div>
         </header>
         <section class="terminal">
+            <div className="flex">
             <textarea 
                 rows="39" 
                 cols="91" 
@@ -18,6 +19,14 @@ const  Terminal = (props) => {
                 value = {props.value}
                 onChange={(event) => {props.setValue(event.target.value)}}
             />
+            <textarea 
+                rows="39" 
+                cols="91" 
+                class="text" 
+                value = {props.result}
+                onChange={(event) => {props.setResult(event.target.value)}}
+            />
+            </div>
         </section>
         </div>
     )

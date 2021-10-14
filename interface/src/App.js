@@ -6,6 +6,7 @@ import Alert from './components/Alert';
 function App() {
   const [value, setValue] = useState("");
   const [result, setResult] = useState("");
+  const [resultCode, setResultCode] = useState("");
   const [title, setTitle] = useState("");
 
   const sendCode = () => {
@@ -15,13 +16,12 @@ function App() {
     })
     .then(function (response) {
       const message = response.data;
-      console.log(message)
+      //console.log(message)
       if (message === ""){
-        setTitle("Build succeed ✓")
         setResult("")
       } else {
-        setTitle("Errors found")
         setResult(message)
+        setResultCode(message)
       }
     })
     .catch(function (error) {
@@ -35,6 +35,8 @@ function App() {
       <Terminal
         value={value}
         setValue={(value)=>{setValue(value)}}
+        result={resultCode}
+        setResult={(value)=>{setResultCode(value)}}
       />
       <br></br>
       <Alert

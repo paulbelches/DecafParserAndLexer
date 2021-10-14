@@ -67,8 +67,7 @@ public:
       cout << "line "<< ctx->start->getLine() <<", main has unnecesary arguments. \n";
       nodeTypes.put(ctx, "error");
     } 
-    /////////// Esto tengo //////////////
-    cout << "/////////// Esto tengo //////////////" << endl;
+
     cout << quadsHandler.toString();
   }
   //Check for errors
@@ -654,6 +653,7 @@ public:
   virtual void exitVarIdLocation(decafParser::VarIdLocationContext *ctx) override {
     string identifier = ctx->ID()->getText();
     if (nodeValues.get(ctx) == "son" ){
+      //cout << identifier << " relative offset " << endl;
       /* get my offset */
       string fatherType = nodeTypes.get(ctx->parent);
       int offset = structTable.getOffset(fatherType, identifier);
@@ -675,6 +675,7 @@ public:
       string type = nodeTypes.get(ctx);
       nodeTypes.put(ctx->parent, type);
     } else {
+      //cout << identifier << " absolute offset " << endl;
       if (symbolTable.elementExist(identifier) != -1){
         //Get type from symbol table
         /* refactoring */
@@ -803,6 +804,7 @@ public:
     string identifier = ctx->ID()->getText();
     string type = nodeTypes.get(ctx);
     if (nodeValues.get(ctx) == "son" ){
+      //cout << identifier << " relative offset " << endl;
       /* get my offset */
       string fatherType = nodeTypes.get(ctx->parent);
       int offset = structTable.getOffset(fatherType, identifier);
@@ -823,6 +825,7 @@ public:
       //////////////////
       nodeTypes.put(ctx->parent, type);
     } else {
+      //cout << identifier << " absolute offset " << endl;
       if (symbolTable.elementExist(identifier) != -1){
         //Get type from symbol table
         /* refactoring */
@@ -844,6 +847,7 @@ public:
       }
     }
    
+    //cout << identifier << " array offset " << endl;
     //local offset    
     //Get the expression
     string arg1;

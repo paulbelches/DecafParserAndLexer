@@ -24,16 +24,16 @@ using namespace std;
 int main(int argc, const char* argv[]) {
   //cout << "You have entered " << argc << " arguments:" << "\n";
   
-  //string stream;
-  /*
+  string stream;
+  
   if (argc > 1){
     stream = argv[1];
-  } else {*/
+  } else {
     //Read file
+    /*
     std::ifstream stream;
-    stream.open("input.txt");
-
-  //}
+    stream.open("input.txt");*/
+  }
   //Convert Stream
   ANTLRInputStream input(stream);
   //Call lexer
