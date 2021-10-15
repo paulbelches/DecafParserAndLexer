@@ -869,14 +869,14 @@ public:
     int resultTemp = temporalsHandler.getVariable();
     int resultTemp2 = temporalsHandler.getVariable();
     quadsHandler.binding(
-      "t"+to_string(resultTemp), 
+      "L"+to_string(resultTemp), 
       "gt", 
       arg1,
       to_string(identifierSize / size) ,
       ""
     );
     quadsHandler.binding(
-      "t"+to_string(resultTemp2),
+      "L"+to_string(resultTemp2),
       "goto", 
       "",
       "",
@@ -908,7 +908,7 @@ public:
     string arg2;
     //Multiply by the size
     string op2 = arg1 + " * "+ to_string(size);
-    if (quadsHandler.find(op2) == 0) {
+    if (true) { //Remove
       int resultTemp = temporalsHandler.getVariable();
       quadsHandler.binding(
         "t"+to_string(resultTemp), 
@@ -925,7 +925,7 @@ public:
     temp1Value = quadsHandler.find( offsetOp.get(ctx) );
     arg1 = quadsHandler.getId(temp1Value);
     string op3 = arg1 + " + "+ arg2;
-    if (quadsHandler.find(op3) == 0) {
+    if (true) { //Remove
       int resultTemp = temporalsHandler.getVariable();
       quadsHandler.binding(
         "t"+to_string(resultTemp), 
