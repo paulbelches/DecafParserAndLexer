@@ -73,7 +73,7 @@ class FunctionTable {
     
     string toString(){
         string result;
-        cout << "Resutlado" << endl;
+        cout << "Resultado" << endl;
         for (int i = 0; i < idTable.size(); i++){
             data function = functionTable[idTable[i]];
             //result = result + idTable[i] +  " \n" ;

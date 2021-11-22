@@ -19,6 +19,10 @@ class SymbolTableHandler {
     void startTop(){
         maxTop = 0;
     }
+    
+    int getGlobalSize(){        
+        return symbolTable.top().getTop();
+    }
 
     void enter(){
         SymbolTable tempSymbolTable;

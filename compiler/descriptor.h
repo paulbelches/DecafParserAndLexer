@@ -107,6 +107,23 @@ class Descriptor {
         //get temporal registry
         cout << "add $sp $fp " << temporalRegistry << endl;
         cout << "lw "<< resultReg << " ($sp)" << endl;
+      } else if (id[0] == 'g'){
+        resultReg = getResultReg(id, "LD", "");
+        std::size_t start = id.find("[") + 1;
+        std::size_t end = id.find("]");
+        string temporal = id.substr(start, end - start);
+        string temporalRegistry = getRegistry(temporal);
+        //get temporal registry
+        string tempReg;
+        if (!availableRegistrys.empty()){
+          tempReg = getFreeRegistry();
+          freeRegistry(tempReg);
+          cout << "la "+tempReg+" global" << endl;
+        } else {
+          cout << "ERROR" << endl;
+        }
+        cout << "add $sp "<< tempReg <<" " << temporalRegistry << endl;
+        cout << "lw "<< resultReg << " ($sp)" << endl;
       } else {
         resultReg = getResultReg(id, "LD", "");
         cout << "#LW "+resultReg+" "+id << endl;

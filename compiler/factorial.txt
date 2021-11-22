@@ -1,6 +1,7 @@
 class Program
 {
     void cout(int a){}
+    int cin(){return 0;}
     
     int fact(int a)
     {
@@ -21,7 +22,7 @@ class Program
         int x;
         int res;
 
-        x = 5;
+        x = cin();
         res = fact(x);
         cout(res);
     }

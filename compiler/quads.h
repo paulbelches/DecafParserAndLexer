@@ -42,6 +42,11 @@ class Quads {
                 first[currentFunction][id] = c;
             }
             last[currentFunction][id] = c;
+        } else if (id[0] == 'g'){
+            if (first[currentFunction][id] == 0){
+                first[currentFunction][id] = c;
+            }
+            last[currentFunction][id] = c;
         }
     }
 
@@ -114,6 +119,7 @@ class Quads {
 
         //Initialice pointers
         cout << ".data" << endl;
+        cout << "global: .space "<< functionSizes["global"] << endl;
         cout << "output: .asciiz \"cout: \""<< endl;
         cout << "input: .asciiz \"cin: \""<< endl;
         cout << "endl: .byte '\\n'" << endl;
@@ -180,6 +186,34 @@ class Quads {
                     registrysTofree.push_back(resultReg);
                 }
 
+                if (instructions[i].result[0] == 'g'){
+                    //cout << instructions[i].result << endl; 
+                    std::size_t start = instructions[i].result.find("[") + 1;
+                    std::size_t end = instructions[i].result.find("]");
+                    string temporal = instructions[i].result.substr(start, end - start);
+                    string temporalRegistry = descriptor.getRegistry(temporal);
+                    string tempReg;
+                    if (temporalRegistry == ""){
+                        temporalRegistry = descriptor.getResultReg(varAddress[temporal].result, "LD", "");
+                        //cout << temporalReg << "insertar la suma" << varAddress[temporal].result << endl;
+                        cout << "li "+temporalRegistry+" "+varAddress[temporal].arg2 << endl;
+                    }
+                    if (!descriptor.availableRegistrys.empty()){
+                        tempReg = descriptor.getFreeRegistry();
+                        registrysTofree.push_back(tempReg);
+                        cout << "la "+tempReg+" global" << endl;
+                    } else {
+                            cout << "ERROR" << endl;
+                     }
+                    //get temporal registry
+                    cout << "#store the result"<< endl;
+                    cout << "add $sp "<< tempReg<< " "<< temporalRegistry << endl;
+                    cout << "sw "<< resultReg << " 0($sp)" << endl;
+                    cout << "#----------------" << endl;
+                    registrysTofree.push_back(temporalRegistry);
+                    registrysTofree.push_back(resultReg);
+                }
+
             } else if (
                 instructions[i].op == "add" ||
                 instructions[i].op == "sub" ||
@@ -231,6 +265,34 @@ class Quads {
                     cout << "#store the result"<< endl;
                     cout << "add $sp $fp " << temporalRegistry << endl;
                     cout << "sw "<< resultReg << " ($sp)" << endl;
+                    cout << "#----------------" << endl;
+                    registrysTofree.push_back(temporalRegistry);
+                    registrysTofree.push_back(resultReg);
+                }
+
+                if (instructions[i].result[0] == 'g'){
+                    //cout << instructions[i].result << endl; 
+                    std::size_t start = instructions[i].result.find("[") + 1;
+                    std::size_t end = instructions[i].result.find("]");
+                    string temporal = instructions[i].result.substr(start, end - start);
+                    string temporalRegistry = descriptor.getRegistry(temporal);
+                    string tempReg;
+                    if (temporalRegistry == ""){
+                        temporalRegistry = descriptor.getResultReg(varAddress[temporal].result, "LD", "");
+                        //cout << temporalReg << "insertar la suma" << varAddress[temporal].result << endl;
+                        cout << "li "+temporalRegistry+" "+varAddress[temporal].arg2 << endl;
+                    }
+                    if (!descriptor.availableRegistrys.empty()){
+                        tempReg = descriptor.getFreeRegistry();
+                        registrysTofree.push_back(tempReg);
+                        cout << "la "+tempReg+" global" << endl;
+                    } else {
+                            cout << "ERROR" << endl;
+                    }
+                    //get temporal registry
+                    cout << "#store the result"<< endl;
+                    cout << "add $sp "<< tempReg<< " "<< temporalRegistry << endl;
+                    cout << "sw "<< resultReg << " 0($sp)" << endl;
                     cout << "#----------------" << endl;
                     registrysTofree.push_back(temporalRegistry);
                     registrysTofree.push_back(resultReg);

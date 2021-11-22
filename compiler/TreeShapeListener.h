@@ -68,10 +68,13 @@ public:
       nodeTypes.put(ctx, "error");
     } 
     //cout << functionTable.toString();
-    /*
-    cout << quadsHandler.toString();*/
+    
+    //cout << quadsHandler.toString();
+    symbolTable.getGlobalSize();
     cout << "#-------------------------------------" << endl;
     map<string, int> functionSizes;
+    functionSizes["global"] = symbolTable.getGlobalSize(); //check later
+    cout << "#global " << functionSizes["global"] << endl; 
     for (int i = 0; i < functionTable.idTable.size(); i++){
       functionSizes[functionTable.idTable[i]] = functionTable.functionTable[functionTable.idTable[i]].size;
       cout << "#" <<functionTable.idTable[i] << " " << functionTable.functionTable[functionTable.idTable[i]].size << endl;

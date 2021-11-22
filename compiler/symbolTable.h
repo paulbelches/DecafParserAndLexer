@@ -14,7 +14,7 @@ class SymbolTable {
         int offset;
     };
     int base;
-    int top;
+    int top = 0;
     map<string, data> symbolTable;
     vector<string> idTable;
 
