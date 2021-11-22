@@ -42,7 +42,6 @@ class SymbolTable {
 
     void binding(string identifier, string dataType, int size){
         data tempData;
-        //cout << "bnd " << identifier << endl;
         tempData.id = idTable.size();
         tempData.size = size;
         tempData.dataType = dataType;

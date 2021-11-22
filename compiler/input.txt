@@ -1,47 +1,30 @@
-class Program{
-	int A[10];
-	int Minimo(int i){
-		int Min;
-		int index;
-		Min = A[i];
-		index = i;
-		while(i<10){
-			if (A[i]<Min){
-				Min = A[i];
-				index = i;
-			}
-			i = i + 1;
-		}
-		return index;
-	}
-	void OutputInt(int n){}
-	int InputInt(){return 0;}
-	void Ordenar(){
-		int i;
-		int j;
-		int temp;
-		i = 0;
-		while(i<10){
-			int Index;
-			Index = Minimo(i);
-			temp = A[Index];
-			A[Index] = A[i];
-			A[i]=temp;
-			i = i+1;
-		}
-	}
-	void main(){
-		int i;
-		i = 0;
-		while(i<10){
-			A[i]=InputInt();
-			i = i+1;
-		}
-		Ordenar();
-		i = 0;
-		while(i<10){
-			OutputInt(A[i]);
-			i = i+1;
-		}
-	}
+class Program
+{
+    void cout(int a){}
+
+    int fib(int a)
+    {
+        int x;
+        int y;
+        int z;
+
+        if (a <= 2)
+        {
+            return 1;
+        }
+
+        x = fib(a - 1);
+        y = fib(a - 2);
+        z = x + y
+        return z;
+    }
+
+    void main()
+    {
+        int x;
+        int res;
+        x = 5;
+        res = fib(x);
+        cout(res);
+    }
 }

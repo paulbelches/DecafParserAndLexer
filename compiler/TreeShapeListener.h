@@ -67,8 +67,18 @@ public:
       cout << "line "<< ctx->start->getLine() <<", main has unnecesary arguments. \n";
       nodeTypes.put(ctx, "error");
     } 
-
-    cout << quadsHandler.toString();
+    //cout << functionTable.toString();
+    /*
+    cout << quadsHandler.toString();*/
+    cout << "#-------------------------------------" << endl;
+    map<string, int> functionSizes;
+    for (int i = 0; i < functionTable.idTable.size(); i++){
+      functionSizes[functionTable.idTable[i]] = functionTable.functionTable[functionTable.idTable[i]].size;
+      cout << "#" <<functionTable.idTable[i] << " " << functionTable.functionTable[functionTable.idTable[i]].size << endl;
+    }
+    quadsHandler.setFunctionSizes(functionSizes);
+    cout << "#-------------------------------------" << endl;
+    cout << quadsHandler.generateCode();
   }
   //Check for errors
   virtual void exitVariableDeclaration(decafParser::VariableDeclarationContext *ctx) override {    
@@ -79,9 +89,6 @@ public:
       type = "struct"+ctx->varType()->structDeclaration()->ID()->getText();
     } else {
       type =  ctx->varType()->getText();
-      //////////
-      //cout << "inicializar "<< identifier << endl;
-      //////////
     }
     
     if (typeTable.elementExist(type) < 0){
@@ -150,6 +157,7 @@ public:
     typeTable.enter();
     structTable.enter();
     symbolTable.enter();
+    symbolTable.startTop();
     quadsHandler.enter();
     temporalsHandler.reset();
     string type =  ctx->methodType()->getText();
@@ -165,11 +173,13 @@ public:
         ""
       );
       //////////
-      int parameterCounter = ctx->parameter().size() -1;
+      
+      int parameterCounter = 0; //ctx->parameter().size() -1;
       vector<string> params;
-      while (parameterCounter >= 0){
+      while (parameterCounter < ctx->parameter().size()){
         //////////
         /* Get temporal */
+        /*
         int resultTemp = temporalsHandler.getVariable();
         quadsHandler.binding(
           "t"+to_string(resultTemp), 
@@ -177,11 +187,11 @@ public:
           ctx->parameter(parameterCounter)->children[1]->getText(),
           "",
           ctx->parameter(parameterCounter)->children[1]->getText()
-        );
+        );*/
         //cout << "t"+to_string(resultTemp)+" load "+ctx->parameter(parameterCounter)->children[1]->getText()<< endl;
         //////////
         nodeValues.put(ctx->parameter(parameterCounter), identifier);
-        parameterCounter--;
+        parameterCounter++;
       }
       functionTable.binding(identifier, type, params);
       nodeTypes.put(ctx, type);
@@ -213,6 +223,8 @@ public:
       nodeTypes.put(ctx, "error");
     } else {
       //////////
+      //cout << "Tamaño de la función " << symbolTable.getMaxTop() << endl;
+      functionTable.setSize(identifier, symbolTable.getMaxTop());
       quadsHandler.binding(
         identifier, 
         "End", 
@@ -234,6 +246,19 @@ public:
       symbolTable.binding(identifier, type, size);
       symbolTable.bindingParamTable(identifier, type, size);
       nodeTypes.put(ctx, type);
+      ////////////////////////
+      //int tempValue = quadsHandler.find(offsetOp.get(ctx->ID()->getText()));
+      //string arg = "l["+quadsHandler.getId(tempValue)+"]";
+      //cout <<  symbolTable.top().lookup(identifier).offset << endl;
+      ///////////////////////
+      int resultTemp = temporalsHandler.getVariable();
+      quadsHandler.binding(
+        "t"+to_string(resultTemp), 
+        "pop", 
+        "l["+to_string(symbolTable.top().lookup(identifier).offset)+"]",
+        "",
+        ""
+      );
       /////////////MOdify
       functionTable.pushParam(nodeValues.get(ctx), type);
       /////////////
@@ -453,7 +478,7 @@ public:
       }
       quadsHandler.binding(
         "rr", 
-        "mov", 
+        "return", 
         arg1,
         "",
         ""
@@ -580,7 +605,7 @@ public:
         //Read return value
         quadsHandler.binding(
           "t"+to_string(resultTemp), 
-          "mov", 
+          "loadr", 
           "rr", 
           "",
           ctx->getText()
@@ -660,7 +685,7 @@ public:
       //cout << identifier << " My offset es " << offset << endl;
       //Get the address from identifier
       string op = "$zero + "+to_string(offset);
-      if (quadsHandler.find(op) == 0) {
+      if (true) {
         int resultTemp = temporalsHandler.getVariable();
         quadsHandler.binding(
           "t"+to_string(resultTemp), 
@@ -675,14 +700,14 @@ public:
       string type = nodeTypes.get(ctx);
       nodeTypes.put(ctx->parent, type);
     } else {
-      //cout << identifier << " absolute offset " << endl;
       if (symbolTable.elementExist(identifier) != -1){
         //Get type from symbol table
         /* refactoring */
         int offset = symbolTable.getOffset(identifier);
+        //cout << identifier << " absolute offset " << offset << endl;
         //cout << identifier << " My offset padre es " << offset << endl;
         string op = "$zero + "+to_string(offset);
-        if (quadsHandler.find(op) == 0) {
+        if (true) {
           int resultTemp = temporalsHandler.getVariable();
           quadsHandler.binding(
             "t"+to_string(resultTemp), 
@@ -705,7 +730,7 @@ public:
       string arg1 = quadsHandler.getId(temp1Value);
       string arg2 = quadsHandler.getId(temp2Value);
       string op = arg1+" + "+arg2;
-      if (quadsHandler.find(op) == 0) {
+      if (true) {
         int resultTemp = temporalsHandler.getVariable();
         quadsHandler.binding(
           "t"+to_string(resultTemp), 
@@ -811,7 +836,7 @@ public:
       //cout << identifier << " My offset es " << offset << endl;
       //Get the address from identifier
       string op = "$zero + "+to_string(offset);
-      if (quadsHandler.find(op) == 0) {
+      if (true) {
         int resultTemp = temporalsHandler.getVariable();
         quadsHandler.binding(
           "t"+to_string(resultTemp), 
@@ -832,7 +857,7 @@ public:
         int offset = symbolTable.getOffset(identifier);
         //cout << identifier << " My offset padre es " << offset << endl;
         string op = "$zero + "+to_string(offset);
-        if (quadsHandler.find(op) == 0) {
+        if (true) {
           int resultTemp = temporalsHandler.getVariable();
           quadsHandler.binding(
             "t"+to_string(resultTemp), 
@@ -869,14 +894,14 @@ public:
     int resultTemp = temporalsHandler.getVariable();
     int resultTemp2 = temporalsHandler.getVariable();
     quadsHandler.binding(
-      "L"+to_string(resultTemp), 
+      "t"+to_string(resultTemp), 
       "gt", 
       arg1,
       to_string(identifierSize / size) ,
       ""
     );
     quadsHandler.binding(
-      "L"+to_string(resultTemp2),
+      "t"+to_string(resultTemp2),
       "goto", 
       "",
       "",
@@ -948,7 +973,7 @@ public:
       string arg1 = quadsHandler.getId(temp1Value);
       string arg2 = quadsHandler.getId(temp2Value);
       string op = arg1+" + "+arg2;
-      if (quadsHandler.find(op) == 0) {
+      if (true) {
         int resultTemp = temporalsHandler.getVariable();
         quadsHandler.binding(
           "t"+to_string(resultTemp), 

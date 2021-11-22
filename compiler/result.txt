@@ -1,174 +1,164 @@
-Function InputInt :
-rr load 0
-EndInputInt
-Function OutputInt :
-t0 load n
-EndOutputInt
-Function Minimo :
-t0 load i
-inicializar Min
-inicializar index
-Asign Min A[i]
-Asign index i
-lt t0 10 L1 i<10
-goto L2 i<10
-L1:
-lt l[t4] l[t1] L3 A[i]<Min
-goto L4 A[i]<Min
-L3:
-t9 add t0 2 i+2
-Asign Min A[i+2]
-Asign index i
- L4:
-t10 add t0 1 i+1
-Asign i i+1
-goto L0
- L2:
-rr load l[t5]
-EndMinimo
-Function Ordenar :
-inicializar i
-inicializar j
-inicializar temp
-Asign i 0
-lt l[t0] 10 L7 i<10
-goto L8 i<10
-L7:
-inicializar Index
-push i
-goto Minimo
-t2 loadrr Minimo(i)
-Asign Index Minimo(i)
-Asign temp A[Index]
-Asign A[Index] A[i]
-Asign A[i] temp
-t16 add l[t0] 1 i+1
-Asign i i+1
-goto L6
- L8:
-EndOrdenar
-Function main :
-inicializar i
-Asign i 0
-lt l[t0] 10 L10 i<10
-goto L11 i<10
-L10:
-goto InputInt
-t4 loadrr InputInt()
-Asign A[i] InputInt()
-t5 add l[t0] 1 i+1
-Asign i i+1
-goto L9
- L11:
-goto Ordenar
-t6 loadrr Ordenar()
-Asign i 0
-lt l[t0] 10 L13 i<10
-goto L14 i<10
-L13:
-push A[i]
-goto OutputInt
-t10 loadrr OutputInt(A[i])
-t11 add l[t0] 1 i+1
-Asign i i+1
-goto L12
- L14:
-Endmain
-/////////// Esto tengo //////////////
-function InputInt   
-mov rr 0  
-End InputInt   
-function OutputInt   
-pop t0 n  
-End OutputInt   
-function Minimo   
-pop t0 i  
-add t1 $zero 4 
-add t2 $zero 0 
-mul t3 t0 4 
-add t4 t2 t3 
-mov l[t1] l[t4]  
-add t5 $zero 8 
-mov l[t5] t0  
-label L0   
-lt L1 t0 10 
-goto L2   
-label L1   
-lt L3 l[t4] l[t1] 
-goto L4   
-label L3   
-mul t7 l[t6] 4 
-add t8 t2 t7 
-add t9 t0 2 
-mov l[t1] l[t8]  
-mov l[t5] t0  
-label L4   
-add t10 t0 1 
-mov t0 t10  
-goto L0    
-label L2    
-mov rr l[t5]  
-End Minimo   
-function Ordenar   
-add t0 $zero 0 
-mov l[t0] 0  
-label L6   
-lt L7 l[t0] 10 
-goto L8   
-label L7   
-add t1 $zero 12 
-push l[t0]   
-goto Minimo   
-mov t2 rr  
-mov l[t1] t2  
-add t3 $zero 8 
-mul t5 l[t4] 4 
-add t6 t0 t5 
-mov l[t3] l[t6]  
-mul t8 l[t7] 4 
-add t9 t0 t8 
-mul t11 l[t10] 4 
-add t12 t0 t11 
-mov l[t9] l[t12]  
-mul t14 l[t13] 4 
-add t15 t0 t14 
-mov l[t15] l[t3]  
-add t16 l[t0] 1 
-mov l[t0] t16  
-goto L6    
-label L8    
-End Ordenar   
-function main   
-add t0 $zero 0 
-mov l[t0] 0  
-label L9   
-lt L10 l[t0] 10 
-goto L11   
-label L10   
-mul t2 l[t1] 4 
-add t3 t0 t2 
-goto InputInt   
-mov t4 rr  
-mov l[t3] t4  
-add t5 l[t0] 1 
-mov l[t0] t5  
-goto L9    
-label L11    
-goto Ordenar   
-mov t6 rr  
-mov l[t0] 0  
-label L12   
-lt L13 l[t0] 10 
-goto L14   
-label L13   
-mul t8 l[t7] 4 
-add t9 t0 t8 
-push l[t9]   
-goto OutputInt   
-mov t10 rr  
-add t11 l[t0] 1 
-mov l[t0] t11  
-goto L12    
-label L14    
-End main   
+#-------------------------------------
+#cout 4
+#fib 16
+#main 8
+#-------------------------------------
+.data
+output: .asciiz "cout: "
+endl: .byte '\n'
+.text
+add $fp $sp 0 
+j main
 
+cout:
+#store the return address
+sub $sp $fp 4
+sw $ra ($sp)
+#----------------
+sub $fp $sp 4 #alloc the function size 
+#pop a param
+#LW $t0 t0
+lw $t0 -4($sp)
+#----------------
+#Store the param values
+sw $t0 0($fp)
+#-----------------------
+li $t1 
+#-------------Print result --------------------
+la $a0, output
+li $v0, 4
+syscall
+lw $a0, 0($fp)
+li $v0, 1
+syscall
+la $a0, endl
+li $v0, 4
+syscall
+#----------------------------------------------
+add $fp $fp 4 #dealloc the function size 
+lw $ra ($fp) #load the returning address
+add $fp $fp 4 #return to the base of the base of the previus method
+jr $ra 
+
+fib:
+#store the return address
+sub $sp $fp 4
+sw $ra ($sp)
+#----------------
+sub $fp $sp 16 #alloc the function size 
+#pop a param
+#LW $t0 t0
+lw $t0 -4($sp)
+#----------------
+#Store the param values
+sw $t0 0($fp)
+#-----------------------
+addi $t1 $zero 0
+add $sp $fp $t1
+lw $t2 ($sp)
+ble $t2 2 L0
+jal L1
+L0:
+li $t0 1
+move $v0 $t0
+add $fp $fp 16 #dealloc the function size 
+lw $ra ($fp) #load the returning address
+add $fp $fp 4 #return to the base of the base of the previus method
+jr $ra 
+L1:
+addi $t1 $zero 4
+addi $t2 $zero 0
+add $sp $fp $t2
+lw $t4 ($sp)
+subi $t3 $t4 1
+#push a param
+sub $sp $fp 8
+sw $t3 ($sp)
+#----------------
+jal fib
+move $t0 $v0
+move $t1 $t0 #Load
+li $t2 4
+#store the result
+add $sp $fp $t2
+sw $t1 ($sp)
+#----------------
+addi $t3 $zero 8
+addi $t4 $zero 0
+add $sp $fp $t4
+lw $t6 ($sp)
+subi $t5 $t6 2
+#push a param
+sub $sp $fp 8
+sw $t5 ($sp)
+#----------------
+jal fib
+move $t0 $v0
+move $t1 $t0 #Load
+li $t2 8
+#store the result
+add $sp $fp $t2
+sw $t1 ($sp)
+#----------------
+addi $t3 $zero 12
+addi $t4 $zero 4
+addi $t5 $zero 8
+add $sp $fp $t4
+lw $t7 ($sp)
+add $sp $fp $t5
+lw $t2 ($sp)
+add $t6 $t7 $t2
+move $t1 $t6 #Load
+#store the result
+add $sp $fp $t3
+sw $t1 ($sp)
+#----------------
+addi $t7 $zero 12
+add $sp $fp $t7
+lw $t3 ($sp)
+move $v0 $t3
+add $fp $fp 16 #dealloc the function size 
+lw $ra ($fp) #load the returning address
+add $fp $fp 4 #return to the base of the base of the previus method
+jr $ra 
+li $t1 
+
+main:
+#store the return address
+sub $sp $fp 4
+sw $ra ($sp)
+#----------------
+sub $fp $sp 8 #alloc the function size 
+addi $t0 $zero 0
+li $t1 2
+#store the result
+add $sp $fp $t0
+sw $t1 ($sp)
+#----------------
+addi $t2 $zero 4
+addi $t3 $zero 0
+#push a param
+add $sp $fp $t3
+lw $t4 ($sp)
+sub $sp $fp 8
+sw $t4 ($sp)
+#----------------
+jal fib
+move $t0 $v0
+move $t1 $t0 #Load
+li $t2 4
+#store the result
+add $sp $fp $t2
+sw $t1 ($sp)
+#----------------
+addi $t3 $zero 4
+#push a param
+add $sp $fp $t3
+lw $t4 ($sp)
+sub $sp $fp 8
+sw $t4 ($sp)
+#----------------
+jal cout
+move $t0 $v0
+li $t1 
+#fin

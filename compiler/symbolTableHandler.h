@@ -10,6 +10,15 @@ class SymbolTableHandler {
     public:
     stack<SymbolTable> symbolTable;
     SymbolTable paramTable;
+    int maxTop;
+
+    int getMaxTop(){
+        return maxTop;
+    }
+
+    void startTop(){
+        maxTop = 0;
+    }
 
     void enter(){
         SymbolTable tempSymbolTable;
@@ -25,6 +34,10 @@ class SymbolTableHandler {
     }
 
     void exit(){
+        if (maxTop < symbolTable.top().getTop()){
+            maxTop = symbolTable.top().getTop();
+            //cout << "si lo hice "<< maxTop << endl;
+        }
         symbolTable.pop();
     }
 
