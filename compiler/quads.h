@@ -115,6 +115,7 @@ class Quads {
         //Initialice pointers
         cout << ".data" << endl;
         cout << "output: .asciiz \"cout: \""<< endl;
+        cout << "input: .asciiz \"cin: \""<< endl;
         cout << "endl: .byte '\\n'" << endl;
         cout << ".text" << endl;
         cout << "add $fp $sp 0 "<< endl;
@@ -338,6 +339,22 @@ class Quads {
                 cout << "sw $ra ($sp)" << endl;
                 cout << "#----------------" << endl;
                 cout << "sub $fp $sp " << functionSizes[currentFunction] <<" #alloc the function size "<< endl;
+                if (currentFunction == "cin"){
+                    cout << "# Printing out the text" << endl;
+                    cout << "li $v0, 4" << endl;
+                    cout << "la $a0, input" << endl;
+                    cout << "syscall" << endl;
+                    cout << "# Getting user input" << endl;
+                    cout << "li $v0, 5" << endl;
+                    cout << "syscall" << endl;
+                    cout << "add $fp $fp " << functionSizes[currentFunction] <<" #dealloc the function size "<< endl;
+                    cout << "lw $ra ($fp) #load the returning address" << endl;
+                    cout << "add $fp $fp 4 #return to the base of the base of the previus method" << endl;
+                    cout << "jr $ra " << endl;
+                    //cout << "# Moving the integer input to another register" << endl;
+                    //cout << "move $t0, $v0" << endl;
+                    //cout << "move $v0, $t0 " << endl;
+                }
             }  else if (
                 instructions[i].op == "eq" || 
                 instructions[i].op == "ne" ||

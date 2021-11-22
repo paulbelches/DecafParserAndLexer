@@ -1,7 +1,7 @@
 class Program
 {
     void cout(int a){}
-    int cin(){return 0;}
+
     int fib(int a)
     {
         int x;
@@ -23,7 +23,7 @@ class Program
     {
         int x;
         int res;
-        x = cin();
+        x = 5;
         res = fib(x);
         cout(res);
     }
